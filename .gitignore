@@ -1,0 +1,10 @@
+azure_keys.h
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+make_unique.h
+results.html
+basicserver
+tester
+
