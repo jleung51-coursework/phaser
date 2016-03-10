@@ -108,8 +108,17 @@ prop_vals_t get_properties (const table_entity::properties_type& properties, pro
 }
 
 /*
+  Return true if an HTTP request has a JSON body
+ */
+bool has_json_body (http_request message) {
+  return message.headers()["Content-type"] == "application/json";
+}
+
+/*
   Given an HTTP message with a JSON body, return the JSON
   body as an unordered map of strings to strings.
+
+  If the message has no JSON body, return an empty map.
 
   Note that all types of JSON values are returned as strings.
   Use C++ conversion utilities to convert to numbers or dates
