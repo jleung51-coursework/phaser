@@ -197,7 +197,7 @@ void handle_get(http_request message) {
     return;
   }
   // User has indicated they want all items in this partition by the `*`
-  if (paths[2] == "*" && paths.size() == 3)
+  if (paths.size() == 3 && paths[2] == "*")
   {
     // Create Query
     table_query query {};
