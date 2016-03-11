@@ -187,10 +187,17 @@ void handle_get(http_request message) {
   }
 
   // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
+  if (paths.size() == 2)
+  {
+    //Path includes table and partition but no row
+    //Or table and row but no partition
+    //Or partition and row but no table
+    message.reply(status_codes::BadRequest);
+    return;
+  }
   if (paths[2] == "*")
   {
     // Create Query
-    cout << "This works" << endl;
     table_query query {};
     table_query_iterator end;
     query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, paths[1]));
