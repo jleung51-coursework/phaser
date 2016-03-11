@@ -187,6 +187,7 @@ void handle_get(http_request message) {
   }
 
   // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
+  // Checking for malformed request
   if (paths.size() == 2)
   {
     //Path includes table and partition but no row
@@ -195,6 +196,7 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
+  // User has indicated they want all items in this partition by the `*`
   if (paths[2] == "*")
   {
     // Create Query
