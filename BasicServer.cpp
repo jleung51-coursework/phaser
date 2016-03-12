@@ -226,10 +226,16 @@ void handle_get(http_request message) {
 void handle_post(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
+
   auto paths = uri::split_path(path);
   // Need at least an operation and a table name
-  // [0] refers to the operation name (evaluated after size() to avoid segfault)
-  if (paths.size() < 2 || paths[0] != create_table) {
+  if (paths.size() < 2) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if (paths[0] != create_table) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -253,10 +259,16 @@ void handle_post(http_request message) {
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** PUT " << path << endl;
+
   auto paths = uri::split_path(path);
   // Need at least an operation, table name, partition, and row
-  // [0] refers to the operation name (evaluated after size() to avoid segfault)
-  if (paths.size() < 4 || paths[0] != update_entity) {
+  if (paths.size() < 4) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if (paths[0] != update_entity) {
     message.reply(status_codes::BadRequest);
     return;
   }
