@@ -1,5 +1,6 @@
 #include "TableCache.h"
 
+#include <cassert>
 #include <string>
 #include <unordered_map>
 
@@ -9,15 +10,19 @@
 using azure::storage::cloud_storage_account;
 using azure::storage::cloud_table;
 using azure::storage::cloud_table_client;
+using azure::storage::storage_uri;
 
 using pplx::extensibility::critical_section_t;
 using pplx::extensibility::scoped_critical_section_t;
 
 using std::string;
 
+using web::http::uri;
+
 using cache_t = std::unordered_map<string,cloud_table>;
 
 cloud_table TableCache::lookup_table(const string& table_name) {
+  assert (client.base_uri ().path() != "");
   scoped_critical_section_t lock {resplock};
 
   auto entry (table_cache.find(table_name));

@@ -74,7 +74,7 @@ const string delete_entity {"DeleteEntity"};
 /*
   Cache of opened tables
  */
-TableCache table_cache {storage_connection_string};
+TableCache table_cache {};
 
 /*
   Convert properties represented in Azure Storage type
@@ -108,8 +108,17 @@ prop_vals_t get_properties (const table_entity::properties_type& properties, pro
 }
 
 /*
+  Return true if an HTTP request has a JSON body
+ */
+bool has_json_body (http_request message) {
+  return message.headers()["Content-type"] == "application/json";
+}
+
+/*
   Given an HTTP message with a JSON body, return the JSON
   body as an unordered map of strings to strings.
+
+  If the message has no JSON body, return an empty map.
 
   Note that all types of JSON values are returned as strings.
   Use C++ conversion utilities to convert to numbers or dates
@@ -183,6 +192,11 @@ void handle_get(http_request message) {
       ++it;
     }
     message.reply(status_codes::OK, value::array(key_vec));
+    return;
+  }
+
+  if (paths.size() != 3) {
+    message.reply (status_codes::BadRequest);
     return;
   }
 
@@ -336,6 +350,10 @@ void handle_delete(http_request message) {
   Wait for a carriage return, then shut the server down.
  */
 int main (int argc, char const * argv[]) {
+  cout << "Parsing connection string" << endl;
+  table_cache.init (storage_connection_string);
+
+  cout << "Opening listener" << endl;
   http_listener listener {def_url};
   listener.support(methods::GET, &handle_get);
   listener.support(methods::POST, &handle_post);
