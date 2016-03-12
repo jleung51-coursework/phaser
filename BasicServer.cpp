@@ -228,7 +228,8 @@ void handle_post(http_request message) {
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation and a table name
-  if (paths.size() < 2) {
+  // [0] refers to the operation name (evaluated after size() to avoid segfault)
+  if (paths.size() < 2 || paths[0] != create_table) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -237,18 +238,13 @@ void handle_post(http_request message) {
   cloud_table table {table_cache.lookup_table(table_name)};
 
   // Create table (idempotent if table exists)
-  if (paths[0] == create_table) {
-    cout << "Create " << table_name << endl;
-    bool created {table.create_if_not_exists()};
-    cout << "Administrative table URI " << table.uri().primary_uri().to_string() << endl;
-    if (created)
-      message.reply(status_codes::Created);
-    else
-      message.reply(status_codes::Accepted);
-  }
-  else {
-    message.reply(status_codes::BadRequest);
-  }
+  cout << "Create " << table_name << endl;
+  bool created {table.create_if_not_exists()};
+  cout << "Administrative table URI " << table.uri().primary_uri().to_string() << endl;
+  if (created)
+    message.reply(status_codes::Created);
+  else
+    message.reply(status_codes::Accepted);
 }
 
 /*
