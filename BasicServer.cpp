@@ -109,6 +109,8 @@ prop_vals_t get_properties (const table_entity::properties_type& properties, pro
 
 /*
   Return true if an HTTP request has a JSON body
+
+  This routine can be called multiple times on the same message.
  */
 bool has_json_body (http_request message) {
   return message.headers()["Content-type"] == "application/json";
@@ -119,6 +121,10 @@ bool has_json_body (http_request message) {
   body as an unordered map of strings to strings.
 
   If the message has no JSON body, return an empty map.
+
+  THIS ROUTINE CAN ONLY BE CALLED ONCE FOR A GIVEN MESSAGE
+  (see http://microsoft.github.io/cpprestsdk/classweb_1_1http_1_1http__request.html#ae6c3d7532fe943de75dcc0445456cbc7
+  for source of this limit).
 
   Note that all types of JSON values are returned as strings.
   Use C++ conversion utilities to convert to numbers or dates
@@ -169,6 +175,8 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
+
+  unordered_map<string,string> json_body {get_json_body (message)};
 
   cloud_table table {table_cache.lookup_table(paths[0])};
   if ( ! table.exists()) {
@@ -264,6 +272,8 @@ void handle_put(http_request message) {
     return;
   }
 
+  unordered_map<string,string> json_body {get_json_body (message)};  
+
   cloud_table table {table_cache.lookup_table(paths[1])};
   if ( ! table.exists()) {
     message.reply(status_codes::NotFound);
@@ -276,7 +286,7 @@ void handle_put(http_request message) {
   if (paths[0] == update_entity) {
     cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
     table_entity::properties_type& properties = entity.properties();
-    for (const auto v : get_json_body(message)) {
+    for (const auto v : json_body) {
       properties[v.first] = entity_property {v.second};
     }
 
