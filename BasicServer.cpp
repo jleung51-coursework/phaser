@@ -195,6 +195,11 @@ void handle_get(http_request message) {
     return;
   }
 
+  if (paths.size() != 3) {
+    message.reply (status_codes::BadRequest);
+    return;
+  }
+
   // GET specific entry: Partition == paths[1], Row == paths[2]
   table_operation retrieve_operation {table_operation::retrieve_entity(paths[1], paths[2])};
   table_result retrieve_result {table.execute(retrieve_operation)};
