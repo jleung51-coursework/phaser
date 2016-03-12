@@ -226,9 +226,16 @@ void handle_get(http_request message) {
 void handle_post(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
+
   auto paths = uri::split_path(path);
   // Need at least an operation and a table name
   if (paths.size() < 2) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if (paths[0] != create_table) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -237,18 +244,13 @@ void handle_post(http_request message) {
   cloud_table table {table_cache.lookup_table(table_name)};
 
   // Create table (idempotent if table exists)
-  if (paths[0] == create_table) {
-    cout << "Create " << table_name << endl;
-    bool created {table.create_if_not_exists()};
-    cout << "Administrative table URI " << table.uri().primary_uri().to_string() << endl;
-    if (created)
-      message.reply(status_codes::Created);
-    else
-      message.reply(status_codes::Accepted);
-  }
-  else {
-    message.reply(status_codes::BadRequest);
-  }
+  cout << "Create " << table_name << endl;
+  bool created {table.create_if_not_exists()};
+  cout << "Administrative table URI " << table.uri().primary_uri().to_string() << endl;
+  if (created)
+    message.reply(status_codes::Created);
+  else
+    message.reply(status_codes::Accepted);
 }
 
 /*
@@ -257,9 +259,16 @@ void handle_post(http_request message) {
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** PUT " << path << endl;
+
   auto paths = uri::split_path(path);
   // Need at least an operation, table name, partition, and row
   if (paths.size() < 4) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if (paths[0] != update_entity) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -273,21 +282,16 @@ void handle_put(http_request message) {
   table_entity entity {paths[2], paths[3]};
 
   // Update entity
-  if (paths[0] == update_entity) {
-    cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
-    table_entity::properties_type& properties = entity.properties();
-    for (const auto v : get_json_body(message)) {
-      properties[v.first] = entity_property {v.second};
-    }
-
-    table_operation operation {table_operation::insert_or_merge_entity(entity)};
-    table_result op_result {table.execute(operation)};
-
-    message.reply(status_codes::OK);
+  cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
+  table_entity::properties_type& properties = entity.properties();
+  for (const auto v : get_json_body(message)) {
+    properties[v.first] = entity_property {v.second};
   }
-  else {
-    message.reply(status_codes::BadRequest);
-  }
+
+  table_operation operation {table_operation::insert_or_merge_entity(entity)};
+  table_result op_result {table.execute(operation)};
+
+  message.reply(status_codes::OK);
 }
 
 /*
