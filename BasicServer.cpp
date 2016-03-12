@@ -255,7 +255,8 @@ void handle_put(http_request message) {
   cout << endl << "**** PUT " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation, table name, partition, and row
-  if (paths.size() < 4) {
+  // [0] refers to the operation name (evaluated after size() to avoid segfault)
+  if (paths.size() < 4 || paths[0] != update_entity) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -269,21 +270,16 @@ void handle_put(http_request message) {
   table_entity entity {paths[2], paths[3]};
 
   // Update entity
-  if (paths[0] == update_entity) {
-    cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
-    table_entity::properties_type& properties = entity.properties();
-    for (const auto v : get_json_body(message)) {
-      properties[v.first] = entity_property {v.second};
-    }
-
-    table_operation operation {table_operation::insert_or_merge_entity(entity)};
-    table_result op_result {table.execute(operation)};
-
-    message.reply(status_codes::OK);
+  cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
+  table_entity::properties_type& properties = entity.properties();
+  for (const auto v : get_json_body(message)) {
+    properties[v.first] = entity_property {v.second};
   }
-  else {
-    message.reply(status_codes::BadRequest);
-  }
+
+  table_operation operation {table_operation::insert_or_merge_entity(entity)};
+  table_result op_result {table.execute(operation)};
+
+  message.reply(status_codes::OK);
 }
 
 /*
