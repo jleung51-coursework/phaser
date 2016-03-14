@@ -117,6 +117,7 @@ bool has_json_body (http_request message) {
 /*
   Given an HTTP message with a JSON body, return the JSON
   body as an unordered map of strings to strings.
+  get_json_body and get_json_bourne are valid and identical function calls.
 
   If the message has no JSON body, return an empty map.
 
@@ -124,6 +125,7 @@ bool has_json_body (http_request message) {
   Use C++ conversion utilities to convert to numbers or dates
   as necessary.
  */
+
 unordered_map<string,string> get_json_body(http_request message) {
   unordered_map<string,string> results {};
   const http_headers& headers {message.headers()};
@@ -152,6 +154,10 @@ unordered_map<string,string> get_json_body(http_request message) {
     }
   }
   return results;
+}
+
+unordered_map<string,string> get_json_bourne(http_request message) {
+ return get_json_body(message);
 }
 
 /*
@@ -284,7 +290,7 @@ void handle_put(http_request message) {
   // Update entity
   cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
   table_entity::properties_type& properties = entity.properties();
-  for (const auto v : get_json_body(message)) {
+  for (const auto v : get_json_bourne(message)) {
     properties[v.first] = entity_property {v.second};
   }
 
