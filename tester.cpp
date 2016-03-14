@@ -211,8 +211,10 @@ SUITE(GET) {
     A test of GET of a single entity
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
+
+    // Proper request
     pair<status_code,value> result {
-      do_request (
+      do_request(
         methods::GET,
         string(GetFixture::addr)
         + GetFixture::table + "/"
@@ -220,7 +222,6 @@ SUITE(GET) {
         + GetFixture::row
       )
     };
-
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK_EQUAL(
       string("{\"")
@@ -230,6 +231,67 @@ SUITE(GET) {
       + "\"}",
       result.second.serialize()
     );
+
+    //TODO
+    // The following commented tests currently induce a segmentation fault
+    // due to the lack of checking for empty paths in handle_get()
+    /*
+    // Missing table name and slash
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::partition + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Missing partition name and slash
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Missing row name and slash
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::partition
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Empty table name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + "/"
+      + GetFixture::partition + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Empty partition name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Empty row name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::partition + "/"
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    */
   }
 
   /*
