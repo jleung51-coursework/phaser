@@ -188,7 +188,7 @@ void handle_get(http_request message) {
 
   // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
   // Checking for malformed request
-  if (paths.size() == 2)
+  if (paths.size() == 2 || paths[1] == "")
   {
     //Path includes table and partition but no row
     //Or table and row but no partition
