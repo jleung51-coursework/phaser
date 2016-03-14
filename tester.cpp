@@ -121,7 +121,7 @@ int delete_table (const string& addr, const string& table) {
 
   addr: Prefix of the URI (protocol, address, and port)
   table: Table in which to insert the entity
-  partition: Partition of the entity 
+  partition: Partition of the entity
   row: Row of the entity
   prop: Name of the property
   pstring: Value of the property, as a string
@@ -140,7 +140,7 @@ int put_entity(const string& addr, const string& table, const string& partition,
 
   addr: Prefix of the URI (protocol, address, and port)
   table: Table in which to insert the entity
-  partition: Partition of the entity 
+  partition: Partition of the entity
   row: Row of the entity
  */
 int delete_entity (const string& addr, const string& table, const string& partition, const string& row)  {
@@ -212,20 +212,25 @@ SUITE(GET) {
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
     pair<status_code,value> result {
-      do_request (methods::GET,
-		  string(GetFixture::addr)
-		  + GetFixture::table + "/"
-		  + GetFixture::partition + "/"
-		  + GetFixture::row)};
-      
-      CHECK_EQUAL(string("{\"")
-		  + GetFixture::property
-		  + "\":\""
-		  + GetFixture::prop_val
-		  + "\"}",
-		  result.second.serialize());
-      CHECK_EQUAL(status_codes::OK, result.first);
-    }
+      do_request (
+        methods::GET,
+        string(GetFixture::addr)
+        + GetFixture::table + "/"
+        + GetFixture::partition + "/"
+        + GetFixture::row
+      )
+    };
+
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK_EQUAL(
+      string("{\"")
+      + GetFixture::property
+      + "\":\""
+      + GetFixture::prop_val
+      + "\"}",
+      result.second.serialize()
+    );
+  }
 
   /*
     A test of GET all table entries
