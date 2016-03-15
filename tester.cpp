@@ -209,7 +209,9 @@ SUITE(GET) {
 
   /*
     GET test of a single specified entity.
+
     URI: http://localhost:34568/TableName/PartitionName/RowName
+    
     The Row name cannot be "*".
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
@@ -233,6 +235,36 @@ SUITE(GET) {
       + "\"}",
       result.second.serialize()
     );
+
+    // Incorrect table name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + "NonexistantTable/"
+      + GetFixture::partition + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // Incorrect partition name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + "NonexistantPartition/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // Incorrect row name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::partition + "/"
+      + "NonexistantRow"
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
 
     //TODO
     // The following commented tests currently induce a segmentation fault
