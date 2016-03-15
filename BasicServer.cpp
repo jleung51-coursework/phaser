@@ -201,8 +201,38 @@ void handle_get(http_request message) {
     return;
   }
 
-  if (paths.size() != 3) {
-    message.reply (status_codes::BadRequest);
+  // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
+  // Checking for malformed request
+  if (paths.size() == 2 || paths[1] == "")
+  {
+    //Path includes table and partition but no row
+    //Or table and row but no partition
+    //Or partition and row but no table
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // User has indicated they want all items in this partition by the `*`
+  if (paths.size() == 3 && paths[2] == "*")
+  {
+    // Create Query
+    table_query query {};
+    table_query_iterator end;
+    query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, paths[1]));
+    // Execute Query
+    table_query_iterator it = table.execute_query(query);
+    // Parse into vector
+    vector<value> key_vec;
+    while (it != end) {
+      cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+      prop_vals_t keys {
+  make_pair("Partition",value::string(it->partition_key())),
+  make_pair("Row", value::string(it->row_key()))};
+      keys = get_properties(it->properties(), keys);
+      key_vec.push_back(value::object(keys));
+      ++it;
+    }
+    // message reply
+    message.reply(status_codes::OK, value::array(key_vec));
     return;
   }
 
