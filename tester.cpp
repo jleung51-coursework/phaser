@@ -209,6 +209,8 @@ SUITE(GET) {
 
   /*
     A test of GET of a single entity
+    addr/table/partition/row/property
+
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
     pair<status_code,value> result {
@@ -251,6 +253,33 @@ SUITE(GET) {
      */
     //CHECK_EQUAL(body.serialize(), string("{\"")+string(GetFixture::property)+ "\":\""+string(GetFixture::prop_val)+"\"}");
     CHECK_EQUAL(status_codes::OK, result.first);
+
+    //GET all tests
+
+    //table name does not exist
+    result = do_request( methods::GET, string(GetFixture::addr) + "NonexistentTable" );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // addr/table/ <- add "/" at end
+    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" );
+    CHECK_EQUAL(status_codes::OK, result.first);
+
+    //just addr, no table name
+    result = do_request( methods::GET, string(GetFixture::addr) );
+    CHECK_EQUAL( status_codes::BadRequest, result.first);
+
+/*
+    //no addr doesn't work
+    result = do_request( methods::GET, string(GetFixture::table) );
+    CHECK_EQUAL( status_codes::BadRequest, result.first);
+*/
+
+/*
+    //table/table name as partition
+    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::table) );
+    CHECK_EQUAL( status_codes::BadRequest, result.first);
+*/
+
     CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, partition, row));
   }
 }
