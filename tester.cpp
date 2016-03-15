@@ -211,7 +211,7 @@ SUITE(GET) {
     GET test of a single specified entity.
 
     URI: http://localhost:34568/TableName/PartitionName/RowName
-    
+
     The Row name cannot be "*".
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
@@ -326,6 +326,92 @@ SUITE(GET) {
     );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
     */
+  }
+
+  /*
+    GET test of entities which have all the properties listed in the
+    JSON object, regardless of their values.
+
+    URI: http://localhost:34568/TableName
+    Body (JSON object): A name denotes a property; a value is the string "*".
+      E.g. {"born":"*","name":"*"} where "born" and "name" are properties.
+   */
+  TEST_FIXTURE(GetFixture, GetProperties) {
+
+    // Add additional entity p2
+    string p2_partition {"Katherines,The"};
+    string p2_row {"Canada"};
+    string p2_property {"Home"};
+    string p2_prop_val {"Vancouver"};
+    int put_result {put_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row, p2_property, p2_prop_val)};
+    cerr << "put result " << put_result << endl;
+    assert (put_result == status_codes::OK);
+
+    // Add additional entity p3
+    string p3_partition {"Person"};
+    string p3_row {"Country"};
+    string p3_property {"City"};
+    string p3_prop_val {"CityName"};
+    put_result = put_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row, p3_property, p3_prop_val);
+    cerr << "put result " << put_result << endl;
+    if (put_result != status_codes::OK) {
+      delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row);
+      assert (put_result == status_codes::OK);  // Exit program; show error message
+    }
+
+    // Add property to match
+    put_result = put_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row, "Home", "Vancouver");
+    cerr << "put result " << put_result << endl;
+    if (put_result != status_codes::OK) {
+      delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row);
+      delete_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row);
+      assert (put_result == status_codes::OK);  // Exit program; show error message
+    }
+
+    // Proper request
+    value desired_properties {
+      value::string(
+        string("{\"")
+        + "Born"  // Property
+        + "\":\""
+        + "*"  // Value
+        + "\"}"
+      )
+    };
+    pair<status_code,value> result {
+      do_request(
+        methods::GET,
+        string(GetFixture::addr)
+        + GetFixture::table,
+        desired_properties
+      )
+    };
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(2, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
+
+    desired_properties = value::string(
+      string("{\"")
+      + "City"  // Property
+      + "\":\""
+      + "*"  // Value
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(1, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
+
+    //TODO Additional tests here
+
+    // Cleaning up created entities
+    CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row));
+    CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row));
   }
 
   /*
