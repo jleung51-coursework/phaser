@@ -13,4 +13,4 @@ UnitTest++ is used for testing.
 * Daphne Chong
 * Jeffrey Leung
 * Yi-Hsuan Wu
-* Josh Wu
+* Joshua Wu
