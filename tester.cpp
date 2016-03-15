@@ -208,7 +208,9 @@ SUITE(GET) {
   };
 
   /*
-    A test of GET of a single entity
+    GET test of a single specified entity.
+    URI: http://localhost:34568/TableName/PartitionName/RowName
+    The Row name cannot be "*".
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
 
