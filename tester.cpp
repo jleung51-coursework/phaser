@@ -309,13 +309,11 @@ SUITE(GET) {
     
     //TESTS
 
-    //basic tests
     // table does not exist
     result = do_request( methods::GET, string(GetFixture::addr) + "NonexistentTable" );
     CHECK_EQUAL(status_codes::NotFound, result.first);
 
-    // addr/table/partition/row
-    // addr//partition/row -- missing table name
+    // missing table name
     result = do_request( methods::GET, string(GetFixture::addr) + "/" + string(GetFixture::partition) + "/*" );
     CHECK_EQUAL( status_codes::NotFound, result.first);
 
@@ -324,41 +322,25 @@ SUITE(GET) {
     CHECK_EQUAL(status_codes::BadRequest, result.first);
 
     //missing * for row
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::partition) + "/" );
+    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + partition + "/" );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
 
-    //testing for Katherines,The because partitions seems to default to Franklin,Aretha
-    //give correct Katherines,The
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/Katherines,The/*" );
-    CHECK_EQUAL(status_codes::OK, result.first);
-
-    //give correct row with Katherines,The
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/Katherines,The/Canada" );
-    CHECK_EQUAL(status_codes::OK, result.first);
-
-    //give Katherines,The with wrong row
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/Katherines,The/Germany" );
-    CHECK_EQUAL(status_codes::NotFound, result.first);
-
-    //give Katherines,The with no * for row
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/Katherines,The/" );
-    CHECK_EQUAL(status_codes::BadRequest, result.first);
-
-    //deletes Katherines,The
-    CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, partition, row) );
-
-    //to show it really is gone: give correct Katherines,The which worked earlier
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/Katherines,The/*" );
-    CHECK_EQUAL(status_codes::OK, result.first);
-
-    //give a row name
+    //give a correct row name
     result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::partition) + "/USA" );
     CHECK_EQUAL(status_codes::OK, result.first);
 
     //give a row name that doesn't match
-    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::partition) + "/Korea" );
+    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + partition + "/Korea" );
     CHECK_EQUAL(status_codes::NotFound, result.first);
+    
+    //deletes key Katherines,The
+    CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, partition, row) );
 
+    //to show it is gone: give correct Katherines,The 
+    // test deleted partition
+    result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + partition + "/*" );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    
     //table found and ok
     result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::partition) + "/*" );
     CHECK_EQUAL(status_codes::OK, result.first);
