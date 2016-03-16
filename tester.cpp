@@ -413,7 +413,89 @@ SUITE(GET) {
     CHECK(result.second.is_array());
     CHECK_EQUAL(2, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
-    //TODO Additional tests here
+    // Proper request
+    // Requests 0 entities
+    desired_properties = value::string(
+      string("{\"")
+      + "NonexistentProperty"  // Property
+      + "\":\""
+      + "*"  // Value
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(0, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
+
+    // Empty table name
+    desired_properties = value::string(
+      string("{\"")
+      + "City"  // Property
+      + "\":\""
+      + "*"  // Value
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr),
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Incorrect table name
+    desired_properties = value::string(
+      string("{\"")
+      + "City"  // Property
+      + "\":\""
+      + "*"  // Value
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + "NonexistentTable",
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // JSON object with no properties
+    // Should be the same as a proper GetAll request
+    desired_properties = value::string(
+      string("{\"")
+      + "\":\""
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK_EQUAL(3, result.second.as_array().size());
+
+    // JSON object with non-'*' value
+    desired_properties = value::string(
+      string("{\"")
+      + "Home"  // Property
+      + "\":\""
+      + "NonAsteriskValue"  // Value
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);  // Currently fails due to no implementation of /TableName + JSON body
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(2, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
     // Cleaning up created entities
     CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row));
