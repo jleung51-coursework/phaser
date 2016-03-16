@@ -369,7 +369,7 @@ SUITE(GET) {
     }
 
     // Proper request
-    // Requests the 1 entity:
+    // Uses 1 property to request the 1 entity:
     //   Person/Country, with properties "City:CityName, Home:Vancouver"
     value desired_properties {
       value::string(
@@ -393,7 +393,7 @@ SUITE(GET) {
     CHECK_EQUAL(1, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
     // Proper request
-    // Requests the 2 entities:
+    // Uses 1 property to request the 2 entities:
     //   Katherines,The/Canada, with properties "Home:Vancouver"
     //   Person/Country, with properties "City:CityName, Home:Vancouver"
     desired_properties = value::string(
@@ -414,7 +414,7 @@ SUITE(GET) {
     CHECK_EQUAL(2, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
     // Proper request
-    // Requests 0 entities
+    // Uses 1 property to request 0 entities
     desired_properties = value::string(
       string("{\"")
       + "NonexistentProperty"  // Property
