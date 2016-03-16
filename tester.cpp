@@ -135,6 +135,15 @@ int put_entity(const string& addr, const string& table, const string& partition,
   return result.first;
 }
 
+int put_entity(const string& addr, const string& table, const string& partition, const string& row,
+	       const vector<pair<string,value>>& props) {
+  pair<status_code,value> result {
+    do_request (methods::PUT,
+		addr + "UpdateEntity/" + table + "/" + partition + "/" + row,
+		value::object (props))};
+  return result.first;
+}
+
 /*
   Utility to delete an entity
 
