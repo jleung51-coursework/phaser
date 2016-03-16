@@ -393,6 +393,30 @@ SUITE(GET) {
     CHECK_EQUAL(1, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
     // Proper request
+    // Uses 2 properties to request the 1 entity:
+    //   Person/Country, with properties "City:CityName, Home:Vancouver"
+    desired_properties = value::string(
+      string("{\"")
+      + "City"  // Property 1
+      + "\":\""
+      + "*"  // Value 1
+      + "\",\""
+      + "Home" // Property 2
+      + "\":\""
+      + "*"  // Value 2
+      + "\"}"
+    );
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      desired_properties
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(1, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
+
+    // Proper request
     // Uses 1 property to request the 2 entities:
     //   Katherines,The/Canada, with properties "Home:Vancouver"
     //   Person/Country, with properties "City:CityName, Home:Vancouver"
