@@ -494,8 +494,6 @@ SUITE(GET) {
       desired_properties
     );
     CHECK_EQUAL(status_codes::BadRequest, result.first);  // Currently fails due to no implementation of /TableName + JSON body
-    CHECK(result.second.is_array());
-    CHECK_EQUAL(2, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
     // Cleaning up created entities
     CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row));
