@@ -240,7 +240,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
-      + "NonexistantTable/"
+      + "NonexistentTable/"
       + GetFixture::partition + "/"
       + GetFixture::row
     );
@@ -251,7 +251,7 @@ SUITE(GET) {
       methods::GET,
       string(GetFixture::addr)
       + GetFixture::table + "/"
-      + "NonexistantPartition/"
+      + "NonexistentPartition/"
       + GetFixture::row
     );
     CHECK_EQUAL(status_codes::NotFound, result.first);
@@ -262,7 +262,7 @@ SUITE(GET) {
       string(GetFixture::addr)
       + GetFixture::table + "/"
       + GetFixture::partition + "/"
-      + "NonexistantRow"
+      + "NonexistentRow"
     );
     CHECK_EQUAL(status_codes::NotFound, result.first);
 
