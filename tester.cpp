@@ -121,7 +121,7 @@ int delete_table (const string& addr, const string& table) {
 
   addr: Prefix of the URI (protocol, address, and port)
   table: Table in which to insert the entity
-  partition: Partition of the entity 
+  partition: Partition of the entity
   row: Row of the entity
   prop: Name of the property
   pstring: Value of the property, as a string
@@ -140,7 +140,7 @@ int put_entity(const string& addr, const string& table, const string& partition,
 
   addr: Prefix of the URI (protocol, address, and port)
   table: Table in which to insert the entity
-  partition: Partition of the entity 
+  partition: Partition of the entity
   row: Row of the entity
  */
 int delete_entity (const string& addr, const string& table, const string& partition, const string& row)  {
@@ -208,26 +208,314 @@ SUITE(GET) {
   };
 
   /*
-    A test of GET of a single entity
-    addr/table/partition/row/property
+    GET test of a single specified entity.
 
+    URI: http://localhost:34568/TableName/PartitionName/RowName
+
+    The Row name cannot be "*".
    */
   TEST_FIXTURE(GetFixture, GetSingle) {
+
+    // Proper request
     pair<status_code,value> result {
-      do_request (methods::GET,
-		  string(GetFixture::addr)
-		  + GetFixture::table + "/"
-		  + GetFixture::partition + "/"
-		  + GetFixture::row)};
-      
-      CHECK_EQUAL(string("{\"")
-		  + GetFixture::property
-		  + "\":\""
-		  + GetFixture::prop_val
-		  + "\"}",
-		  result.second.serialize());
-      CHECK_EQUAL(status_codes::OK, result.first);
+      do_request(
+        methods::GET,
+        string(GetFixture::addr)
+        + GetFixture::table + "/"
+        + GetFixture::partition + "/"
+        + GetFixture::row
+      )
+    };
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK_EQUAL(
+      string("{\"")
+      + GetFixture::property
+      + "\":\""
+      + GetFixture::prop_val
+      + "\"}",
+      result.second.serialize()
+    );
+
+    // Incorrect table name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + "NonexistentTable/"
+      + GetFixture::partition + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // Incorrect partition name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + "NonexistentPartition/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // Incorrect row name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::partition + "/"
+      + "NonexistentRow"
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    //TODO
+    // The following commented tests currently induce a segmentation fault
+    // due to the lack of checking for empty paths in handle_get()
+    /*
+    // Missing table name and slash
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::partition + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Missing partition name and slash
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Missing row name and slash
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::partition
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Empty table name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + "/"
+      + GetFixture::partition + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Empty partition name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + "/"
+      + GetFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Empty row name
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table + "/"
+      + GetFixture::partition + "/"
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    */
+  }
+
+  /*
+    GET test of entities which have all the properties listed in the
+    JSON object, regardless of their values.
+
+    URI: http://localhost:34568/TableName
+    Body (JSON object): A name denotes a property; a value is the string "*".
+      E.g. {"born":"*","name":"*"} where "born" and "name" are properties.
+   */
+  TEST_FIXTURE(GetFixture, GetProperties) {
+
+    // Add additional entity p2
+    string p2_partition {"Katherines,The"};
+    string p2_row {"Canada"};
+    string p2_property {"Home"};
+    string p2_prop_val {"Vancouver"};
+    int put_result {
+      put_entity (
+        GetFixture::addr, GetFixture::table,
+        p2_partition, p2_row,
+        p2_property, p2_prop_val
+      )
+    };
+    cerr << "put result " << put_result << endl;
+    assert (put_result == status_codes::OK);
+
+    // Add additional entity p3
+    string p3_partition {"Person"};
+    string p3_row {"Country"};
+    string p3_property {"City"};
+    string p3_prop_val {"CityName"};
+    put_result = put_entity (
+      GetFixture::addr, GetFixture::table,
+      p3_partition, p3_row,
+      p3_property, p3_prop_val
+    );
+    cerr << "put result " << put_result << endl;
+    if (put_result != status_codes::OK) {
+      delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row);
+      assert (put_result == status_codes::OK);  // Exit program; show error message
     }
+
+    // Add property to match
+    put_result = put_entity (
+      GetFixture::addr, GetFixture::table,
+      p3_partition, p3_row,
+      "Home", "Vancouver"
+    );
+    cerr << "put result " << put_result << endl;
+    if (put_result != status_codes::OK) {
+      delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row);
+      delete_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row);
+      // Exit program; show error message
+      assert (put_result == status_codes::OK);
+    }
+
+    // Proper request
+    // Uses 1 property to request the 1 entity:
+    //   Person/Country, with properties "City:CityName, Home:Vancouver"
+    vector<pair<string, value>> desired_properties;
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+
+    pair<status_code,value> result {
+      do_request(
+        methods::GET,
+        string(GetFixture::addr)
+        + GetFixture::table,
+        value::object(desired_properties)
+      )
+    };
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(1, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+
+    // Proper request
+    // Uses 2 properties to request the 1 entity:
+    //   Person/Country, with properties "City:CityName, Home:Vancouver"
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+    desired_properties.push_back( make_pair("Home", value::string("*") ));
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(1, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+
+    // Proper request
+    // Uses 1 property to request the 2 entities:
+    //   Katherines,The/Canada, with properties "Home:Vancouver"
+    //   Person/Country, with properties "City:CityName, Home:Vancouver"
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("Home", value::string("*") ));
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(2, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+
+    // Proper request
+    // Uses 1 property to request 0 entities
+    desired_properties.clear();
+    desired_properties.push_back(
+      make_pair("NonexistentProperty", value::string("*") )
+    );
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK(result.second.is_array());
+    CHECK_EQUAL(0, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+
+    // Empty table name
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr),
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    // Incorrect table name
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + "NonexistentTable",
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    // JSON object with no properties
+    // Should be the same as a proper GetAll request
+    desired_properties.clear();
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK_EQUAL(3, result.second.as_array().size());
+
+    // JSON object with non-'*' value
+    desired_properties.clear();
+    desired_properties.push_back(
+      make_pair("City", value::string("NonAsteriskValue") )
+    );
+
+    result = do_request(
+      methods::GET,
+      string(GetFixture::addr)
+      + GetFixture::table,
+      value::object(desired_properties)
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);  // TODO: Currently fails due to no implementation of /TableName + JSON body
+
+    // Cleaning up created entities
+    CHECK_EQUAL(
+      status_codes::OK,
+      delete_entity (
+        GetFixture::addr, GetFixture::table, p2_partition, p2_row
+      )
+    );
+    CHECK_EQUAL(
+      status_codes::OK,
+      delete_entity (
+        GetFixture::addr, GetFixture::table, p3_partition, p3_row
+      )
+    );
+  }
 
   /*
     A test of GET all table entries
@@ -295,7 +583,7 @@ SUITE(GET) {
     assert (put_result == status_codes::OK);
 
     pair<status_code,value> result {
-      do_request (methods::GET, string(GetFixture::addr) + string(GetFixture::table)) 
+      do_request (methods::GET, string(GetFixture::addr) + string(GetFixture::table))
     };
 
     CHECK(result.second.is_array());
@@ -306,7 +594,7 @@ SUITE(GET) {
      */
     //CHECK_EQUAL(body.serialize(), string("{\"")+string(GetFixture::property)+ "\":\""+string(GetFixture::prop_val)+"\"}");
     CHECK_EQUAL(status_codes::OK, result.first);
-    
+
     //TESTS
 
     // table does not exist
@@ -332,15 +620,15 @@ SUITE(GET) {
     //give a row name that doesn't match
     result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + partition + "/Korea" );
     CHECK_EQUAL(status_codes::NotFound, result.first);
-    
+
     //deletes key Katherines,The
     CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, partition, row) );
 
-    //to show it is gone: give correct Katherines,The 
+    //to show it is gone: give correct Katherines,The
     // test deleted partition
     result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + partition + "/*" );
     CHECK_EQUAL(status_codes::OK, result.first);
-    
+
     //table found and ok
     result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::partition) + "/*" );
     CHECK_EQUAL(status_codes::OK, result.first);

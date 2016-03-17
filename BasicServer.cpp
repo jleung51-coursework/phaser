@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <string>
 
 #include <cpprest/base_uri.h>
 #include <cpprest/http_listener.h>
@@ -184,20 +185,64 @@ void handle_get(http_request message) {
 
   // GET all entries in table
   if (paths.size() == 1) {
-    table_query query {};
-    table_query_iterator end;
-    table_query_iterator it = table.execute_query(query);
-    vector<value> key_vec;
-    while (it != end) {
-      cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
-      prop_vals_t keys {
-	make_pair("Partition",value::string(it->partition_key())),
-	make_pair("Row", value::string(it->row_key()))};
-      keys = get_properties(it->properties(), keys);
-      key_vec.push_back(value::object(keys));
-      ++it;
+
+    unordered_map<string,string> json_body {get_json_body (message)};
+    for(const auto v : json_body){
+      if(v.second != "*"){
+        message.reply(status_codes::BadRequest);
+        return;
+      }
     }
-    message.reply(status_codes::OK, value::array(key_vec));
+
+    if(json_body.size() > 0){
+      // creating vector for all properties to loop through later
+      table_query query {};
+      table_query_iterator end;
+      table_query_iterator it = table.execute_query(query);
+      vector<value> key_vec;
+      while (it != end) {
+        cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+        prop_vals_t keys {
+          make_pair("Partition",value::string(it->partition_key())),
+          make_pair("Row", value::string(it->row_key()))};
+        keys = get_properties(it->properties(), keys);
+
+        bool found_all_properties = true;
+        for(const auto desired_property : json_body) {
+          bool found = false;
+          for(const auto property : keys) {
+            if(desired_property.first == property.first) {
+              found = true;
+            }
+          }
+          if(!found) {
+            found_all_properties = false;
+          }
+        }
+
+        if(found_all_properties) {
+          key_vec.push_back(value::object(keys));
+        }
+        ++it;
+      }
+      message.reply(status_codes::OK, value::array(key_vec));
+    }
+    else{
+      table_query query {};
+      table_query_iterator end;
+      table_query_iterator it = table.execute_query(query);
+      vector<value> key_vec;
+      while (it != end) {
+        cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+        prop_vals_t keys {
+    make_pair("Partition",value::string(it->partition_key())),
+    make_pair("Row", value::string(it->row_key()))};
+        keys = get_properties(it->properties(), keys);
+        key_vec.push_back(value::object(keys));
+        ++it;
+      }
+      message.reply(status_codes::OK, value::array(key_vec));
+    }
     return;
   }
 
@@ -240,7 +285,7 @@ void handle_get(http_request message) {
   table_operation retrieve_operation {table_operation::retrieve_entity(paths[1], paths[2])};
   table_result retrieve_result {table.execute(retrieve_operation)};
   cout << "HTTP code: " << retrieve_result.http_status_code() << endl;
-  if (retrieve_result.http_status_code() == status_codes::NotFound) {
+  if (retrieve_result.http_status_code() == status_codes::NotFound) {   // if the table does not exist
     message.reply(status_codes::NotFound);
     return;
   }
@@ -315,7 +360,7 @@ void handle_put(http_request message) {
     return;
   }
 
-  table_entity entity {paths[2], paths[3]};
+  table_entity entity {paths[2], paths[3]}; // partition and row
 
   // Update entity
   cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
