@@ -39,7 +39,6 @@ using azure::storage::table_operation;
 using azure::storage::table_query;
 using azure::storage::table_query_iterator;
 using azure::storage::table_result;
-using azure::storage::access_condition;
 
 using pplx::extensibility::critical_section_t;
 using pplx::extensibility::scoped_critical_section_t;
@@ -171,20 +170,51 @@ void handle_get(http_request message) {
 
   // GET all entries in table
   if (paths.size() == 1) {
-    table_query query {};
-    table_query_iterator end;
-    table_query_iterator it = table.execute_query(query);
-    vector<value> key_vec;
-    while (it != end) {
-      cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
-      prop_vals_t keys {
-	make_pair("Partition",value::string(it->partition_key())),
-	make_pair("Row", value::string(it->row_key()))};
-      keys = get_properties(it->properties(), keys);
-      key_vec.push_back(value::object(keys));
-      ++it;
+
+    unordered_map<string,string> json_body {get_json_body (message)};
+
+    if(json_body.size() > 0){
+      std::vector<string> nameList;
+      for (const auto v : json_body) { // for every pair in json_body (unordered map)
+      // v is a pair<string,string> representing a property in the JSON object 
+        if(v.second == "*"){
+          nameList.push_back(v.first);
+        }
+        // creating vector for all properties to loop through later
+        table_query query {};
+        table_query_iterator end;
+        table_query_iterator it = table.execute_query(query);
+        vector<value> key_vec;
+        while (it != end) {
+          cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+          prop_vals_t keys {
+            make_pair("Partition",value::string(it->partition_key())),
+            make_pair("Row", value::string(it->row_key()))};
+          keys = get_properties(it->properties(), keys);
+          key_vec.push_back(value::object(keys));
+          ++it;
+        }
+        /*for(int i = 0; i < nameList.size(); i++){
+          for 
+        }*/
+      }
     }
-    message.reply(status_codes::OK, value::array(key_vec));
+    else{
+      table_query query {};
+      table_query_iterator end;
+      table_query_iterator it = table.execute_query(query);
+      vector<value> key_vec;
+      while (it != end) {
+        cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+        prop_vals_t keys {
+    make_pair("Partition",value::string(it->partition_key())),
+    make_pair("Row", value::string(it->row_key()))};
+        keys = get_properties(it->properties(), keys);
+        key_vec.push_back(value::object(keys));
+        ++it;
+      }
+    }
+    //message.reply(status_codes::OK, value::array(key_vec));
     return;
   }
 
@@ -199,49 +229,6 @@ void handle_get(http_request message) {
 
   table_entity entity {retrieve_result.entity()};
   table_entity::properties_type properties {entity.properties()};
-
-  unordered_map<string,string> json_body {get_json_body (message)};
-
-  if (json_body.size () > 0) { // There was a body
-    std::vector<string> nameList;
-    for (const auto v : json_body) { // for every pair in json_body (unordered map)
-    // v is a pair<string,string> representing a property in the JSON object 
-      if(v.second == "*"){
-        nameList.push_back(v.first);
-      }
-    }
-    // Do other things for the case where the message had a body
-    // creates query
-    table_query query {}; 
-    table_query_iterator end;
-
-    access_condition existing = azure::storage::access_condition::generate_empty_condition();
-    for(int i = 0 ; i < nameList.size() ; i++){
-      // Construct the query operation for all entities that fit the name
-
-      utility::string_t addition = azure::storage::table_query::generate_filter_condition ( "RowKey",
-        azure::storage::query_comparison_operator::equal, nameList[i]); 
-
-      query.set_filter_string(query.combine_filter_conditions (exisiting, 
-        utility::string_t azure::storage::query_logical_operator::op_and, addition));
-    }
-
-    // Execute Query
-      table_query_iterator it = table.execute_query(query);
-      vector<value> key_vec;
-      while (it != end) {
-        cout << "Key: " << it->partition_key() << endl;
-        prop_vals_t keys {
-      make_pair("Partition",value::string(it->partition_key()))};
-        keys = get_properties(it->properties(), keys);
-        key_vec.push_back(value::object(keys));
-        ++it;
-      } 
-
-      // message reply
-    message.reply(status_codes::OK, value::array(key_vec));
-    return;
-  }
   
   // If the entity has any properties, return them as JSON
   prop_vals_t values (get_properties(properties));
