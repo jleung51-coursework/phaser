@@ -371,21 +371,15 @@ SUITE(GET) {
     // Proper request
     // Uses 1 property to request the 1 entity:
     //   Person/Country, with properties "City:CityName, Home:Vancouver"
-    value desired_properties {
-      value::string(
-        string("{\"")
-        + "City"  // Property
-        + "\":\""
-        + "*"  // Value
-        + "\"}"
-      )
-    };
+    vector<pair<string, value>> desired_properties;
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+
     pair<status_code,value> result {
       do_request(
         methods::GET,
         string(GetFixture::addr)
         + GetFixture::table,
-        desired_properties
+        value::object(desired_properties)
       )
     };
     CHECK_EQUAL(status_codes::OK, result.first);
@@ -395,22 +389,15 @@ SUITE(GET) {
     // Proper request
     // Uses 2 properties to request the 1 entity:
     //   Person/Country, with properties "City:CityName, Home:Vancouver"
-    desired_properties = value::string(
-      string("{\"")
-      + "City"  // Property 1
-      + "\":\""
-      + "*"  // Value 1
-      + "\",\""
-      + "Home" // Property 2
-      + "\":\""
-      + "*"  // Value 2
-      + "\"}"
-    );
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+    desired_properties.push_back( make_pair("Home", value::string("*") ));
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
       + GetFixture::table,
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
@@ -420,18 +407,14 @@ SUITE(GET) {
     // Uses 1 property to request the 2 entities:
     //   Katherines,The/Canada, with properties "Home:Vancouver"
     //   Person/Country, with properties "City:CityName, Home:Vancouver"
-    desired_properties = value::string(
-      string("{\"")
-      + "Home"  // Property
-      + "\":\""
-      + "*"  // Value
-      + "\"}"
-    );
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("Home", value::string("*") ));
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
       + GetFixture::table,
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
@@ -439,83 +422,68 @@ SUITE(GET) {
 
     // Proper request
     // Uses 1 property to request 0 entities
-    desired_properties = value::string(
-      string("{\"")
-      + "NonexistentProperty"  // Property
-      + "\":\""
-      + "*"  // Value
-      + "\"}"
+    desired_properties.clear();
+    desired_properties.push_back(
+      make_pair("NonexistentProperty", value::string("*") )
     );
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
       + GetFixture::table,
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
     CHECK_EQUAL(0, result.second.as_array().size());  // Currently fails due to no implementation of /TableName + JSON body
 
     // Empty table name
-    desired_properties = value::string(
-      string("{\"")
-      + "City"  // Property
-      + "\":\""
-      + "*"  // Value
-      + "\"}"
-    );
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr),
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
 
     // Incorrect table name
-    desired_properties = value::string(
-      string("{\"")
-      + "City"  // Property
-      + "\":\""
-      + "*"  // Value
-      + "\"}"
-    );
+    desired_properties.clear();
+    desired_properties.push_back( make_pair("City", value::string("*") ));
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
       + "NonexistentTable",
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::NotFound, result.first);
 
     // JSON object with no properties
     // Should be the same as a proper GetAll request
-    desired_properties = value::string(
-      string("{\"")
-      + "\":\""
-      + "\"}"
-    );
+    desired_properties.clear();
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
       + GetFixture::table,
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK_EQUAL(3, result.second.as_array().size());
 
     // JSON object with non-'*' value
-    desired_properties = value::string(
-      string("{\"")
-      + "Home"  // Property
-      + "\":\""
-      + "NonAsteriskValue"  // Value
-      + "\"}"
+    desired_properties.clear();
+    desired_properties.push_back(
+      make_pair("City", value::string("NonAsteriskValue") )
     );
+
     result = do_request(
       methods::GET,
       string(GetFixture::addr)
       + GetFixture::table,
-      desired_properties
+      value::object(desired_properties)
     );
     CHECK_EQUAL(status_codes::BadRequest, result.first);  // Currently fails due to no implementation of /TableName + JSON body
 
