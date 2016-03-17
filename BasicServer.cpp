@@ -174,29 +174,39 @@ void handle_get(http_request message) {
     unordered_map<string,string> json_body {get_json_body (message)};
 
     if(json_body.size() > 0){
-      std::vector<string> nameList;
-      for (const auto v : json_body) { // for every pair in json_body (unordered map)
-      // v is a pair<string,string> representing a property in the JSON object
-        if(v.second == "*"){
-          nameList.push_back(v.first);
+      // creating vector for all properties to loop through later
+      table_query query {};
+      table_query_iterator end;
+      table_query_iterator it = table.execute_query(query);
+      vector<value> key_vec;
+      while (it != end) {
+        cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+        prop_vals_t keys {
+          make_pair("Partition",value::string(it->partition_key())),
+          make_pair("Row", value::string(it->row_key()))};
+        keys = get_properties(it->properties(), keys);
+
+        bool found_all_properties = true;
+        for(const auto desired_property : json_body) {
+          bool found = false;
+          for(const auto property : keys) {
+            if(desired_property.first == property.first) {
+              found = true;
+            }
+          }
+          if(!found) {
+            found_all_properties = false;
+          }
         }
-        // creating vector for all properties to loop through later
-        table_query query {};
-        table_query_iterator end;
-        table_query_iterator it = table.execute_query(query);
-        vector<value> key_vec;
-        while (it != end) {
-          cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
-          prop_vals_t keys {
-            make_pair("Partition",value::string(it->partition_key())),
-            make_pair("Row", value::string(it->row_key()))};
-          keys = get_properties(it->properties(), keys);
+
+        if(found_all_properties) {
           key_vec.push_back(value::object(keys));
-          ++it;
         }
         /*for(int i = 0; i < nameList.size(); i++){
           for
         }*/
+
+        ++it;
       }
     }
     else{
