@@ -343,7 +343,13 @@ SUITE(GET) {
     string p2_row {"Canada"};
     string p2_property {"Home"};
     string p2_prop_val {"Vancouver"};
-    int put_result {put_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row, p2_property, p2_prop_val)};
+    int put_result {
+      put_entity (
+        GetFixture::addr, GetFixture::table,
+        p2_partition, p2_row,
+        p2_property, p2_prop_val
+      )
+    };
     cerr << "put result " << put_result << endl;
     assert (put_result == status_codes::OK);
 
@@ -352,7 +358,11 @@ SUITE(GET) {
     string p3_row {"Country"};
     string p3_property {"City"};
     string p3_prop_val {"CityName"};
-    put_result = put_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row, p3_property, p3_prop_val);
+    put_result = put_entity (
+      GetFixture::addr, GetFixture::table,
+      p3_partition, p3_row,
+      p3_property, p3_prop_val
+    );
     cerr << "put result " << put_result << endl;
     if (put_result != status_codes::OK) {
       delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row);
@@ -360,12 +370,17 @@ SUITE(GET) {
     }
 
     // Add property to match
-    put_result = put_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row, "Home", "Vancouver");
+    put_result = put_entity (
+      GetFixture::addr, GetFixture::table,
+      p3_partition, p3_row,
+      "Home", "Vancouver"
+    );
     cerr << "put result " << put_result << endl;
     if (put_result != status_codes::OK) {
       delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row);
       delete_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row);
-      assert (put_result == status_codes::OK);  // Exit program; show error message
+      // Exit program; show error message
+      assert (put_result == status_codes::OK);
     }
 
     // Proper request
@@ -488,8 +503,18 @@ SUITE(GET) {
     CHECK_EQUAL(status_codes::BadRequest, result.first);  // Currently fails due to no implementation of /TableName + JSON body
 
     // Cleaning up created entities
-    CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, p2_partition, p2_row));
-    CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, p3_partition, p3_row));
+    CHECK_EQUAL(
+      status_codes::OK,
+      delete_entity (
+        GetFixture::addr, GetFixture::table, p2_partition, p2_row
+      )
+    );
+    CHECK_EQUAL(
+      status_codes::OK,
+      delete_entity (
+        GetFixture::addr, GetFixture::table, p3_partition, p3_row
+      )
+    );
   }
 
   /*
