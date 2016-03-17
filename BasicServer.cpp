@@ -208,6 +208,7 @@ void handle_get(http_request message) {
 
         ++it;
       }
+      message.reply(status_codes::OK, value::array(key_vec));
     }
     else{
       table_query query {};
@@ -223,6 +224,7 @@ void handle_get(http_request message) {
         key_vec.push_back(value::object(keys));
         ++it;
       }
+      message.reply(status_codes::OK, value::array(key_vec));
     }
     //message.reply(status_codes::OK, value::array(key_vec));
     return;
