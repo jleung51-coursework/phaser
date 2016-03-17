@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <string>
 
 #include <cpprest/base_uri.h>
 #include <cpprest/http_listener.h>
@@ -190,13 +191,53 @@ void handle_get(http_request message) {
   table_operation retrieve_operation {table_operation::retrieve_entity(paths[1], paths[2])};
   table_result retrieve_result {table.execute(retrieve_operation)};
   cout << "HTTP code: " << retrieve_result.http_status_code() << endl;
-  if (retrieve_result.http_status_code() == status_codes::NotFound) {
+  if (retrieve_result.http_status_code() == status_codes::NotFound) {   // if the table does not exist
     message.reply(status_codes::NotFound);
     return;
   }
 
   table_entity entity {retrieve_result.entity()};
   table_entity::properties_type properties {entity.properties()};
+
+  unordered_map<string,string> json_body {get_json_body (message)};
+
+  if (json_body.size () > 0) { // There was a body
+    std::vector<string> nameList;
+    for (const auto v : json_body) { // for every pair in json_body (unordered map)
+    // v is a pair<string,string> representing a property in the JSON object 
+      if(v.second == "*"){
+        nameList.push_back(v.first);
+      }
+    }
+    // Do other things for the case where the message had a body
+    // creates query
+    table_query query {}; 
+    table_query_iterator end;
+
+    /*
+    access_condition exisiting = azure::storage::access_condition();
+    for(int i = 0 ; i < nameList.size() ; i++){
+      // Construct the query operation for all entities that fit the name
+
+      static const utility::string_t addition = azure::storage::table_query::generate_filter_condition ( "RowKey",
+        azure::storage::query_comparison_operator::equal, , nameList[i]); 
+
+      query.set_filter_string(query.combine_filter_conditions (exisiting, 
+        static const utility::string_t azure::storage::query_logical_operator::op_and, addition));
+    }*/
+
+    // Execute Query
+      table_query_iterator it = table.execute_query(query);
+      vector<value> key_vec;
+      while (it != end) {
+        cout << "Key: " << it->partition_key() << endl;
+        prop_vals_t keys {
+      make_pair("Partition",value::string(it->partition_key()))};
+        keys = get_properties(it->properties(), keys);
+        key_vec.push_back(value::object(keys));
+        ++it;
+      } 
+  }
   
   // If the entity has any properties, return them as JSON
   prop_vals_t values (get_properties(properties));
@@ -256,7 +297,7 @@ void handle_put(http_request message) {
     return;
   }
 
-  table_entity entity {paths[2], paths[3]};
+  table_entity entity {paths[2], paths[3]}; // partition and row
 
   // Update entity
   if (paths[0] == update_entity) {
