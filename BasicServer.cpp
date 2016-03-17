@@ -172,6 +172,12 @@ void handle_get(http_request message) {
   if (paths.size() == 1) {
 
     unordered_map<string,string> json_body {get_json_body (message)};
+    for(const auto v : json_body){
+      if(v.second != "*"){
+        message.reply(status_codes::BadRequest);
+        return; 
+      }
+    }
 
     if(json_body.size() > 0){
       // creating vector for all properties to loop through later
