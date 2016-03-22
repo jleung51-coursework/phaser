@@ -164,7 +164,7 @@ bool compare_json_values (const value& expected, const value& actual) {
 /*
   Utility to compre expected JSON array with actual
 
-  exp: vector of objects, sorted by Partition/Row property 
+  exp: vector of objects, sorted by Partition/Row property
     The routine will throw if exp is not sorted.
   actual: JSON array value of JSON objects
     The routine will throw if actual is not an array or if
@@ -177,7 +177,7 @@ bool compare_json_values (const value& expected, const value& actual) {
 
   actual is returned by the database and may not be an array, may not
   be values, and may not be sorted by partition/row, so we have
-  to check whether it has those characteristics and convert it 
+  to check whether it has those characteristics and convert it
   to a type comparable to exp.
 */
 bool compare_json_arrays(const vector<object>& exp, const value& actual) {
@@ -189,7 +189,7 @@ bool compare_json_arrays(const vector<object>& exp, const value& actual) {
   */
   auto comp = [] (const object& a, const object& b) -> bool {
     return a.at("Partition").as_string() <= b.at("Partition").as_string() &&
-           a.at("Row").as_string()       <= b.at("Row").as_string(); 
+           a.at("Row").as_string()       <= b.at("Row").as_string();
   };
   if ( ! std::is_sorted(exp.begin(),
                          exp.end(),
@@ -222,7 +222,7 @@ bool compare_json_arrays(const vector<object>& exp, const value& actual) {
   };
   std::transform (act_arr.begin(), act_arr.end(), std::back_inserter(act_o), make_object);
 
-  /* 
+  /*
      Ensure that the actual argument is sorted.
      Unlike exp, we cannot assume this argument is sorted,
      so we sort it.
@@ -284,7 +284,7 @@ int put_entity(const string& addr, const string& table, const string& partition,
 
   addr: Prefix of the URI (protocol, address, and port)
   table: Table in which to insert the entity
-  partition: Partition of the entity 
+  partition: Partition of the entity
   row: Row of the entity
   props: vector of string/value pairs representing the properties
  */
@@ -907,7 +907,7 @@ SUITE(UPDATE_AUTH) {
                        AuthFixture::user_pwd)};
     cout << "Token response " << token_res.first << endl;
     CHECK_EQUAL (token_res.first, status_codes::OK);
-    
+
     pair<status_code,value> result {
       do_request (methods::PUT,
                   string(AuthFixture::addr)
@@ -921,7 +921,7 @@ SUITE(UPDATE_AUTH) {
                                               value::string(added_prop.second))})
                   )};
     CHECK_EQUAL(status_codes::OK, result.first);
-    
+
     pair<status_code,value> ret_res {
       do_request (methods::GET,
                   string(AuthFixture::addr)
@@ -934,10 +934,10 @@ SUITE(UPDATE_AUTH) {
       build_json_object (
                          vector<pair<string,string>> {
                            added_prop,
-                           make_pair(string(AuthFixture::property), 
+                           make_pair(string(AuthFixture::property),
                                      string(AuthFixture::prop_val))}
                          )};
-                             
+
     cout << AuthFixture::property << endl;
     compare_json_values (expect, ret_res.second);
   }
