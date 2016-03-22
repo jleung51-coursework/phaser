@@ -387,9 +387,10 @@ public:
         throw std::exception();
       }
       */
-    }
-  };
+  }
+};
 
+SUITE(GET) {
   /*
     GET test of a single specified entity.
 
@@ -699,10 +700,9 @@ public:
       )
     );
   }
-  }
-};
+//  }
+//};
 
-SUITE(GET) {
   /*
     A test of GET all table entries
 
@@ -724,7 +724,7 @@ SUITE(GET) {
                   + string(BasicFixture::table))};
     CHECK_EQUAL(status_codes::OK, result.first);
 
-/*
+    /*
     //GET all tests
 
     // table name does not exist
@@ -748,7 +748,7 @@ SUITE(GET) {
     // table/table, second table name as partition
     result = do_request( methods::GET, string(GetFixture::addr) + string(GetFixture::table) + "/" + string(GetFixture::table) );
     CHECK_EQUAL( status_codes::BadRequest, result.first);
-*/
+    */
 
     CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, partition, row));
     value obj1 {
@@ -839,7 +839,7 @@ SUITE(GET) {
     //don't need this anymore because Katherins,The is deleted already
     //CHECK_EQUAL(status_codes::OK, delete_entity (GetFixture::addr, GetFixture::table, partition, row) );
   }
-}
+};
 
 
 /*
