@@ -188,8 +188,10 @@ bool compare_json_arrays(const vector<object>& exp, const value& actual) {
     if it is not met.
   */
   auto comp = [] (const object& a, const object& b) -> bool {
-    return a.at("Partition").as_string() <= b.at("Partition").as_string() &&
-           a.at("Row").as_string()       <= b.at("Row").as_string(); 
+    return a.at("Partition").as_string()  <  b.at("Partition").as_string()
+           ||
+           (a.at("Partition").as_string() == b.at("Partition").as_string() &&
+            a.at("Row").as_string()       <  b.at("Row").as_string()); 
   };
   if ( ! std::is_sorted(exp.begin(),
                          exp.end(),

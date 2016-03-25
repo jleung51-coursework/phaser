@@ -21,7 +21,6 @@
 #include <was/table.h>
 
 #include "TableCache.h"
-#include "config.h"
 #include "make_unique.h"
 
 #include "azure_keys.h"
