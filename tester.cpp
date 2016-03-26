@@ -850,31 +850,6 @@ SUITE(GET) {
   }
 };
 
-
-/*
-  Locate and run all tests
- */
-int main(int argc, const char* argv[]) {
-  if (argc < 2)
-    return UnitTest::RunAllTests();
-  else if (argc >= 2){
-    UnitTest::TestReporterStdout reporter;
-    UnitTest::TestRunner runner (reporter);
-    if (argc == 2)
-      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
-                                argv[1],
-                                UnitTest::True(),
-                                0);
-    else if (argc == 3)
-      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
-                                argv[1],
-                                MatchTestName(argv[2]),
-                                0);
-    else
-      cerr << "Usage: tester [suite [test]]" << endl;
-  }
-}
-
 class AuthFixture {
 public:
   static constexpr const char* addr {"http://localhost:34568/"};
@@ -966,5 +941,29 @@ SUITE(UPDATE_AUTH) {
 
     cout << AuthFixture::property << endl;
     compare_json_values (expect, ret_res.second);
+  }
+}
+
+/*
+  Locate and run all tests
+ */
+int main(int argc, const char* argv[]) {
+  if (argc < 2)
+    return UnitTest::RunAllTests();
+  else if (argc >= 2){
+    UnitTest::TestReporterStdout reporter;
+    UnitTest::TestRunner runner (reporter);
+    if (argc == 2)
+      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
+                                argv[1],
+                                UnitTest::True(),
+                                0);
+    else if (argc == 3)
+      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
+                                argv[1],
+                                MatchTestName(argv[2]),
+                                0);
+    else
+      cerr << "Usage: tester [suite [test]]" << endl;
   }
 }
