@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <cstring>
 
 #include <cpprest/http_client.h>
 #include <cpprest/json.h>
@@ -15,7 +16,9 @@
 #include <pplx/pplxtasks.h>
 
 #include <UnitTest++/UnitTest++.h>
+#include <UnitTest++/TestReporterStdout.h>
 
+using std::strcmp;
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -54,6 +57,12 @@ const string get_update_token_op {"GetUpdateToken"};
 // The two optional operations from Assignment 1
 const string add_property_admin {"AddPropertyAdmin"};
 const string update_property_admin {"UpdatePropertyAdmin"};
+
+struct MatchTestName {
+  const char * const tname;
+  MatchTestName (const char* tn) : tname {tn} {};
+  bool operator () (const UnitTest::Test* const test) const { return strcmp(test->m_details.testName, tname) == 0; }
+};
 
 /*
   Make an HTTP request, returning the status code and any JSON value in the body
@@ -843,14 +852,6 @@ SUITE(GET) {
   }
 };
 
-
-/*
-  Locate and run all tests
- */
-int main(int argc, const char* argv[]) {
-  return UnitTest::RunAllTests();
-}
-
 class AuthFixture {
 public:
   static constexpr const char* addr {"http://localhost:34568/"};
@@ -942,5 +943,29 @@ SUITE(UPDATE_AUTH) {
 
     cout << AuthFixture::property << endl;
     compare_json_values (expect, ret_res.second);
+  }
+}
+
+/*
+  Locate and run all tests
+ */
+int main(int argc, const char* argv[]) {
+  if (argc < 2)
+    return UnitTest::RunAllTests();
+  else if (argc >= 2){
+    UnitTest::TestReporterStdout reporter;
+    UnitTest::TestRunner runner (reporter);
+    if (argc == 2)
+      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
+                                argv[1],
+                                UnitTest::True(),
+                                0);
+    else if (argc == 3)
+      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
+                                argv[1],
+                                MatchTestName(argv[2]),
+                                0);
+    else
+      cerr << "Usage: tester [suite [test]]" << endl;
   }
 }
