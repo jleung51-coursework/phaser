@@ -759,7 +759,6 @@ SUITE(GET) {
     CHECK_EQUAL( status_codes::BadRequest, result.first);
     */
 
-    CHECK_EQUAL(status_codes::OK, delete_entity (BasicFixture::addr, BasicFixture::table, partition, row));
     value obj1 {
       value::object(vector<pair<string,value>> {
           make_pair(string("Partition"), value::string(partition)),
