@@ -379,7 +379,7 @@ void handle_put(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != update_entity) {
+  else if (paths[0] != update_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
   }
