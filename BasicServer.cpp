@@ -66,11 +66,29 @@ using web::http::experimental::listener::http_listener;
 using prop_vals_t = vector<pair<string,value>>;
 
 constexpr const char* def_url = "http://localhost:34568";
-
+//Unauthorized Options
 const string create_table {"CreateTable"};
 const string delete_table {"DeleteTable"};
 const string update_entity {"UpdateEntity"};
 const string delete_entity {"DeleteEntity"};
+
+//Authorized Operations
+const string create_table_op {"CreateTableAdmin"};
+const string delete_table_op {"DeleteTableAdmin"};
+
+const string read_entity_admin {"ReadEntityAdmin"};
+const string update_entity_admin {"UpdateEntityAdmin"};
+const string delete_entity_admin {"DeleteEntityAdmin"};
+
+const string read_entity_auth {"ReadEntityAuth"};
+const string update_entity_auth {"UpdateEntityAuth"};
+
+const string get_read_token_op  {"GetReadToken"};
+const string get_update_token_op {"GetUpdateToken"};
+
+// The two optional operations from Assignment 1
+const string add_property_admin {"AddPropertyAdmin"};
+const string update_property_admin {"UpdatePropertyAdmin"};
 
 /*
   Cache of opened tables
@@ -328,7 +346,7 @@ void handle_post(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != create_table) {
+  else if (paths[0] != create_table_op) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -406,7 +424,7 @@ void handle_delete(http_request message) {
   cloud_table table {table_cache.lookup_table(table_name)};
 
   // Delete table
-  if (paths[0] == delete_table) {
+  if (paths[0] == delete_table_op) {
     cout << "Delete " << table_name << endl;
     if ( ! table.exists()) {
       message.reply(status_codes::NotFound);
@@ -416,7 +434,7 @@ void handle_delete(http_request message) {
     message.reply(status_codes::OK);
   }
   // Delete entity
-  else if (paths[0] == delete_entity) {
+  else if (paths[0] == delete_entity_admin) {
     // For delete entity, also need partition and row
     if (paths.size() < 4) {
 	message.reply(status_codes::BadRequest);
