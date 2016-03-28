@@ -2,7 +2,7 @@
  Server utilities Assignment 2, CMPT 276, Spring 2016.
  */
 
-#include "ServerUtils.h"
+#include "../include/ServerUtils.h"
 
 #include <iostream>
 #include <string>
@@ -114,7 +114,7 @@ pair<status_code,table_entity> read_with_token (const http_request& message,
 status_code update_with_token (const http_request& message,
                                const string& endpoint,
                                const unordered_map<string,string>& props) {
-  
+
   /*
     Tokens can contain %2F ('/'). Thus we split the URI path
     *before* decoding and pass the undecoded values to Azure Storage
@@ -124,7 +124,7 @@ status_code update_with_token (const http_request& message,
   if (undecoded_paths.size () != 5) {
     return status_codes::BadRequest;
   }
-  
+
   const string tname {undecoded_paths[1]};
   const string token {undecoded_paths[2]};
   const string partition {undecoded_paths[3]};

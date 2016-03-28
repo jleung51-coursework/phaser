@@ -27,12 +27,18 @@ include_directories(${Test_DIR})
 include_directories(${Casablanca_DIR}/Release/include)
 include_directories(${Store_DIR}/Microsoft.WindowsAzure.Storage/includes)
 
-add_executable (basicserver BasicServer.cpp ServerUtils.cpp ServerUtils.h
-  TableCache.cpp TableCache.h)
+add_executable (
+  basicserver
+  ../src/BasicServer.cpp
+  ../src/ServerUtils.cpp
+  ../include/ServerUtils.h
+  ../src/TableCache.cpp
+  ../include/TableCache.h
+)
 target_link_libraries (basicserver ${REST} ${REST_LIBRARIES} ${STORE})
 
 add_executable (tester tester-basicserver.cpp testmain.cpp)
 target_link_libraries (tester ${REST} ${REST_LIBRARIES} ${STORE} ${TEST})
 
-add_executable (authserver AuthServer.cpp TableCache.cpp TableCache.h)
+add_executable (authserver ../src/AuthServer.cpp ../src/TableCache.cpp ../include/TableCache.h)
 target_link_libraries (authserver ${REST} ${REST_LIBRARIES} ${STORE})
