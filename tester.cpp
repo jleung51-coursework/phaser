@@ -198,9 +198,9 @@ bool compare_json_arrays(const vector<object>& exp, const value& actual) {
   */
   auto comp = [] (const object& a, const object& b) -> bool {
     return a.at("Partition").as_string()  <  b.at("Partition").as_string()
-           ||
-           (a.at("Partition").as_string() == b.at("Partition").as_string() &&
-            a.at("Row").as_string()       <  b.at("Row").as_string());
+          ||
+          (a.at("Partition").as_string() == b.at("Partition").as_string() &&
+           a.at("Row").as_string()       <  b.at("Row").as_string());
   };
   if ( ! std::is_sorted(exp.begin(),
                          exp.end(),
@@ -943,5 +943,29 @@ SUITE(UPDATE_AUTH) {
 
     cout << AuthFixture::property << endl;
     compare_json_values (expect, ret_res.second);
+  }
+}
+
+/*
+  Locate and run all tests
+ */
+int main(int argc, const char* argv[]) {
+  if (argc < 2)
+    return UnitTest::RunAllTests();
+  else if (argc >= 2){
+    UnitTest::TestReporterStdout reporter;
+    UnitTest::TestRunner runner (reporter);
+    if (argc == 2)
+      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
+                                argv[1],
+                                UnitTest::True(),
+                                0);
+    else if (argc == 3)
+      return runner.RunTestsIf (UnitTest::Test::GetTestList(),
+                                argv[1],
+                                MatchTestName(argv[2]),
+                                0);
+    else
+      cerr << "Usage: tester [suite [test]]" << endl;
   }
 }

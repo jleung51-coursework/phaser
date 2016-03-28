@@ -21,8 +21,9 @@
 #include <was/storage_account.h>
 #include <was/table.h>
 
-#include "make_unique.h"
 #include "TableCache.h"
+
+#include "make_unique.h"
 
 #include "azure_keys.h"
 
