@@ -831,7 +831,7 @@ SUITE(GET) {
     CHECK_EQUAL(status_codes::BadRequest, result.first);
 
     //give a correct row name
-    result = do_request( methods::GET, string(BasicFixture::addr) + read_entity_admin + "/" + string(BasicFixture::table) + "/" + string(BasicFixture::partition) + "/USA" );
+    result = do_request( methods::GET, string(BasicFixture::addr) + read_entity_admin + "/" + string(BasicFixture::table) + "/" + string(BasicFixture::partition) + "/" + string(BasicFixture::row) );
     CHECK_EQUAL(status_codes::OK, result.first);
 
     //give a row name that doesn't match
