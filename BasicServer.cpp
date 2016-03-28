@@ -66,11 +66,29 @@ using web::http::experimental::listener::http_listener;
 using prop_vals_t = vector<pair<string,value>>;
 
 constexpr const char* def_url = "http://localhost:34568";
-
+//Unauthorized Options
 const string create_table {"CreateTable"};
 const string delete_table {"DeleteTable"};
 const string update_entity {"UpdateEntity"};
 const string delete_entity {"DeleteEntity"};
+
+//Authorized Operations
+const string create_table_op {"CreateTableAdmin"};
+const string delete_table_op {"DeleteTableAdmin"};
+
+const string read_entity_admin {"ReadEntityAdmin"};
+const string update_entity_admin {"UpdateEntityAdmin"};
+const string delete_entity_admin {"DeleteEntityAdmin"};
+
+const string read_entity_auth {"ReadEntityAuth"};
+const string update_entity_auth {"UpdateEntityAuth"};
+
+const string get_read_token_op  {"GetReadToken"};
+const string get_update_token_op {"GetUpdateToken"};
+
+// The two optional operations from Assignment 1
+const string add_property_admin {"AddPropertyAdmin"};
+const string update_property_admin {"UpdatePropertyAdmin"};
 
 /*
   Cache of opened tables
@@ -177,20 +195,26 @@ void handle_get(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
-  // Need at least a table name
-  if (paths.size() < 1) {
+  // Need at least an operation name and table name
+  if (paths.size() < 2) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if (paths[0] != read_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
   }
 
-  cloud_table table {table_cache.lookup_table(paths[0])};
+  cloud_table table {table_cache.lookup_table(paths[1])};
   if ( ! table.exists()) {
     message.reply(status_codes::NotFound);
     return;
   }
 
   // GET all entries in table
-  if (paths.size() == 1) {
+  if (paths.size() == 2) {
 
     unordered_map<string,string> json_body {get_json_body (message)};
     for(const auto v : json_body){
@@ -254,7 +278,7 @@ void handle_get(http_request message) {
 
   // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
   // Checking for malformed request
-  if (paths.size() == 2 || paths[1] == "")
+  if (paths.size() == 3 || paths[2] == "")
   {
     //Path includes table and partition but no row
     //Or table and row but no partition
@@ -263,12 +287,12 @@ void handle_get(http_request message) {
     return;
   }
   // User has indicated they want all items in this partition by the `*`
-  if (paths.size() == 3 && paths[2] == "*")
+  if (paths.size() == 4 && paths[3] == "*")
   {
     // Create Query
     table_query query {};
     table_query_iterator end;
-    query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, paths[1]));
+    query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, paths[2]));
     // Execute Query
     table_query_iterator it = table.execute_query(query);
     // Parse into vector
@@ -294,7 +318,7 @@ void handle_get(http_request message) {
     return;
   }*/
 
-  table_operation retrieve_operation {table_operation::retrieve_entity(paths[1], paths[2])};
+  table_operation retrieve_operation {table_operation::retrieve_entity(paths[2], paths[3])};
   table_result retrieve_result {table.execute(retrieve_operation)};
   cout << "HTTP code: " << retrieve_result.http_status_code() << endl;
   if (retrieve_result.http_status_code() == status_codes::NotFound) {   // if the table does not exist
@@ -328,7 +352,7 @@ void handle_post(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != create_table) {
+  else if (paths[0] != create_table_op) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -361,7 +385,7 @@ void handle_put(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != update_entity) {
+  else if (paths[0] != update_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -406,7 +430,7 @@ void handle_delete(http_request message) {
   cloud_table table {table_cache.lookup_table(table_name)};
 
   // Delete table
-  if (paths[0] == delete_table) {
+  if (paths[0] == delete_table_op) {
     cout << "Delete " << table_name << endl;
     if ( ! table.exists()) {
       message.reply(status_codes::NotFound);
@@ -416,7 +440,7 @@ void handle_delete(http_request message) {
     message.reply(status_codes::OK);
   }
   // Delete entity
-  else if (paths[0] == delete_entity) {
+  else if (paths[0] == delete_entity_admin) {
     // For delete entity, also need partition and row
     if (paths.size() < 4) {
 	message.reply(status_codes::BadRequest);

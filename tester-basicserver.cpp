@@ -408,6 +408,7 @@ SUITE(GET) {
       do_request(
         methods::GET,
         string(BasicFixture::addr)
+        + read_entity_admin + "/"
         + BasicFixture::table + "/"
         + BasicFixture::partition + "/"
         + BasicFixture::row
@@ -427,6 +428,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(BasicFixture::addr)
+      + read_entity_admin + "/"
       + "NonexistentTable/"
       + BasicFixture::partition + "/"
       + BasicFixture::row
@@ -437,6 +439,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(BasicFixture::addr)
+      + read_entity_admin + "/"
       + BasicFixture::table + "/"
       + "NonexistentPartition/"
       + BasicFixture::row
@@ -447,6 +450,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(BasicFixture::addr)
+      + read_entity_admin + "/"
       + BasicFixture::table + "/"
       + BasicFixture::partition + "/"
       + "NonexistentRow"
@@ -753,7 +757,6 @@ SUITE(GET) {
     CHECK_EQUAL( status_codes::BadRequest, result.first);
     */
 
-    CHECK_EQUAL(status_codes::OK, delete_entity (BasicFixture::addr, BasicFixture::table, partition, row));
     value obj1 {
       value::object(vector<pair<string,value>> {
           make_pair(string("Partition"), value::string(partition)),
