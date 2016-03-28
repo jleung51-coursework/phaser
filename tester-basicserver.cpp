@@ -591,7 +591,7 @@ SUITE(GET) {
     };
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
-    CHECK_EQUAL(1, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+    CHECK_EQUAL(1, result.second.as_array().size());
 
     // Proper request
     // Uses 2 properties to request the 1 entity:
@@ -609,7 +609,7 @@ SUITE(GET) {
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
-    CHECK_EQUAL(1, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+    CHECK_EQUAL(1, result.second.as_array().size());
 
     // Proper request
     // Uses 1 property to request the 2 entities:
@@ -627,7 +627,7 @@ SUITE(GET) {
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
-    CHECK_EQUAL(2, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+    CHECK_EQUAL(2, result.second.as_array().size());
 
     // Proper request
     // Uses 1 property to request 0 entities
@@ -645,7 +645,7 @@ SUITE(GET) {
     );
     CHECK_EQUAL(status_codes::OK, result.first);
     CHECK(result.second.is_array());
-    CHECK_EQUAL(0, result.second.as_array().size());  // TODO: Currently fails due to no implementation of /TableName + JSON body
+    CHECK_EQUAL(0, result.second.as_array().size());
 
     // Empty table name
     desired_properties.clear();
@@ -699,7 +699,7 @@ SUITE(GET) {
       + BasicFixture::table,
       value::object(desired_properties)
     );
-    CHECK_EQUAL(status_codes::BadRequest, result.first);  // TODO: Currently fails due to no implementation of /TableName + JSON body
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
 
     // Cleaning up created entities
     CHECK_EQUAL(
