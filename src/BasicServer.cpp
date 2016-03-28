@@ -21,11 +21,11 @@
 #include <was/storage_account.h>
 #include <was/table.h>
 
-#include "TableCache.h"
+#include "../include/TableCache.h"
 
-#include "make_unique.h"
+#include "../include/make_unique.h"
 
-#include "azure_keys.h"
+#include "../include/azure_keys.h"
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;

@@ -13,10 +13,10 @@
 #include <was/common.h>
 #include <was/table.h>
 
-#include "TableCache.h"
-#include "make_unique.h"
+#include "../include/TableCache.h"
+#include "../include/make_unique.h"
 
-#include "azure_keys.h"
+#include "../include/azure_keys.h"
 
 using azure::storage::storage_exception;
 using azure::storage::cloud_table;
@@ -95,7 +95,7 @@ prop_str_vals_t get_string_properties (const table_entity::properties_type& prop
   Use C++ conversion utilities to convert to numbers or dates
   as necessary.
  */
-unordered_map<string,string> get_json_body(http_request message) {  
+unordered_map<string,string> get_json_body(http_request message) {
   unordered_map<string,string> results {};
   const http_headers& headers {message.headers()};
   auto content_type (headers.find("Content-Type"));
@@ -134,7 +134,7 @@ unordered_map<string,string> get_json_body(http_request message) {
 
     For read-only:
       table_shared_access_policy::permissions::read
-    For read and update: 
+    For read and update:
       table_shared_access_policy::permissions::read |
       table_shared_access_policy::permissions::update
  */
@@ -172,7 +172,7 @@ pair<status_code,string> do_get_token (const cloud_table& data_table,
 /*
   Top-level routine for processing all HTTP GET requests.
  */
-void handle_get(http_request message) { 
+void handle_get(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** AuthServer GET " << path << endl;
   auto paths = uri::split_path(path);
@@ -220,9 +220,9 @@ void handle_delete(http_request message) {
   response.
 
   If you want to support other methods, uncomment
-  the call below that hooks in a the appropriate 
+  the call below that hooks in a the appropriate
   listener.
-  
+
   Wait for a carriage return, then shut the server down.
  */
 int main (int argc, char const * argv[]) {
