@@ -192,19 +192,44 @@ unordered_map<string,string> get_json_bourne(http_request message) {
   operands specify the value(s) to be retrieved.
  */
 void handle_get(http_request message) {
+  unordered_map<string,string> json_body;
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation name and table name
-  if (paths.size() < 2) {
+  if (paths.size() < 2) 
+  {
     message.reply(status_codes::BadRequest);
     return;
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != read_entity_admin) {
+  //Check for use of tokens
+  else if(paths[0] == read_entity_auth)
+  {
+    // Open up JSON body
+    unordered_map<string,string> json_body = get_json_body (message);
+    // find token
+
+    // pass token to azure
+  }
+  //Check for use of admin
+  else if (paths[0] != read_entity_admin) 
+  {
     message.reply(status_codes::BadRequest);
     return;
+  }
+  //Using Admin
+  else
+  {
+    //Parsing JSON
+    unordered_map<string,string> json_body = get_json_body (message);
+    for(const auto v : json_body){
+      if(v.second != "*"){
+        message.reply(status_codes::BadRequest);
+      }
+        return;
+      }
   }
 
   cloud_table table {table_cache.lookup_table(paths[1])};
@@ -215,8 +240,6 @@ void handle_get(http_request message) {
 
   // GET all entries in table
   if (paths.size() == 2) {
-
-    unordered_map<string,string> json_body {get_json_body (message)};
     for(const auto v : json_body){
       if(v.second != "*"){
         message.reply(status_codes::BadRequest);
