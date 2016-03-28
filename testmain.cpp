@@ -18,7 +18,10 @@ struct MatchTestName {
 };
 
 /*
-  Locate and run all tests
+  Runs a specific suite/test if a suite, or a suite and a test, is provided,
+  or all tests if none are provided.
+
+  To execute, run ./tester [suite [test]]
  */
 int main(int argc, const char* argv[]) {
   if (argc < 2)
@@ -37,6 +40,6 @@ int main(int argc, const char* argv[]) {
                                 MatchTestName(argv[2]),
                                 0);
     else
-      cerr << "Usage: tester [suite [test]]" << endl;
+      cerr << "Usage: ./tester [suite [test]]" << endl;
   }
 }
