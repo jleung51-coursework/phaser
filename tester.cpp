@@ -414,6 +414,7 @@ SUITE(GET) {
       do_request(
         methods::GET,
         string(BasicFixture::addr)
+        + read_entity_admin + "/"
         + BasicFixture::table + "/"
         + BasicFixture::partition + "/"
         + BasicFixture::row
@@ -433,6 +434,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(BasicFixture::addr)
+      + read_entity_admin + "/"
       + "NonexistentTable/"
       + BasicFixture::partition + "/"
       + BasicFixture::row
@@ -443,6 +445,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(BasicFixture::addr)
+      + read_entity_admin + "/"
       + BasicFixture::table + "/"
       + "NonexistentPartition/"
       + BasicFixture::row
@@ -453,6 +456,7 @@ SUITE(GET) {
     result = do_request(
       methods::GET,
       string(BasicFixture::addr)
+      + read_entity_admin + "/"
       + BasicFixture::table + "/"
       + BasicFixture::partition + "/"
       + "NonexistentRow"
