@@ -27,6 +27,8 @@
 
 #include "../include/azure_keys.h"
 
+#include "../include/ServerUtils.h"
+
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
 using azure::storage::storage_exception;
@@ -192,7 +194,6 @@ unordered_map<string,string> get_json_bourne(http_request message) {
   operands specify the value(s) to be retrieved.
  */
 void handle_get(http_request message) {
-  unordered_map<string,string> json_body;
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
@@ -204,49 +205,29 @@ void handle_get(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  //Check for use of tokens
-  else if(paths[0] == read_entity_auth)
-  {
-    // Open up JSON body
-    unordered_map<string,string> json_body = get_json_body (message);
-    // find token
-
-    // pass token to azure
-  }
-  //Check for use of admin
-  else if (paths[0] != read_entity_admin) 
+  //Check for use of admin or auth
+  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth) 
   {
     message.reply(status_codes::BadRequest);
     return;
   }
-  //Using Admin
-  else
-  {
-    //Parsing JSON
-    unordered_map<string,string> json_body = get_json_body (message);
-    for(const auto v : json_body){
-      if(v.second != "*"){
-        message.reply(status_codes::BadRequest);
-      }
-        return;
-      }
-  }
-
+  // Check for specified table
   cloud_table table {table_cache.lookup_table(paths[1])};
   if ( ! table.exists()) {
     message.reply(status_codes::NotFound);
     return;
   }
 
-  // GET all entries in table
+  // GET all from table or with specific properties
   if (paths.size() == 2) {
+  	unordered_map<string,string> json_body = get_json_body (message);
     for(const auto v : json_body){
       if(v.second != "*"){
         message.reply(status_codes::BadRequest);
         return;
       }
     }
-
+    //Get all with specific properties
     if(json_body.size() > 0){
       // creating vector for all properties to loop through later
       table_query query {};
@@ -280,6 +261,7 @@ void handle_get(http_request message) {
       }
       message.reply(status_codes::OK, value::array(key_vec));
     }
+    //Get all from table
     else{
       table_query query {};
       table_query_iterator end;
@@ -335,14 +317,25 @@ void handle_get(http_request message) {
   }
 
   // GET specific entry: Partition == paths[1], Row == paths[2]
-  /*
-  if (paths.size() != 3) {
-    message.reply (status_codes::BadRequest);
-    return;
-  }*/
-
+  //Setting up for operation
   table_operation retrieve_operation {table_operation::retrieve_entity(paths[2], paths[3])};
-  table_result retrieve_result {table.execute(retrieve_operation)};
+  table_result retrieve_result;
+  if (paths[0] == read_entity_auth)
+  {
+  	pair<web::http::status_code,table_entity> result_pair = read_with_token(message, tables_endpoint);
+  	retrieve_result.set_http_status_code(result_pair.first);
+  	retrieve_result.set_entity(result_pair.second);
+  }
+  else if(paths[0] == read_entity_admin)
+  {
+  	retrieve_result = table.execute(retrieve_operation);
+  }
+  else
+  {
+  	//Should never be reached
+ 	message.reply(status_codes::BadRequest);
+ 	return;
+  }
   cout << "HTTP code: " << retrieve_result.http_status_code() << endl;
   if (retrieve_result.http_status_code() == status_codes::NotFound) {   // if the table does not exist
     message.reply(status_codes::NotFound);
