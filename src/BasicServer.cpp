@@ -320,28 +320,28 @@ void handle_get(http_request message) {
   //Setting up for operation
   table_operation retrieve_operation {table_operation::retrieve_entity(paths[2], paths[3])};
   table_result retrieve_result;
+  // Check if using auth
   if (paths[0] == read_entity_auth)
   {
+  	// Retrieve entity using token method
   	pair<web::http::status_code,table_entity> result_pair = read_with_token(message, tables_endpoint);
+  	// Convert into results type
   	retrieve_result.set_http_status_code(result_pair.first);
   	retrieve_result.set_entity(result_pair.second);
   }
+  // Using Admin
   else if(paths[0] == read_entity_admin)
   {
+  	// Retrieve item as usual
   	retrieve_result = table.execute(retrieve_operation);
   }
-  else
-  {
-  	//Should never be reached
- 	message.reply(status_codes::BadRequest);
- 	return;
-  }
+  //Check status codes
   cout << "HTTP code: " << retrieve_result.http_status_code() << endl;
   if (retrieve_result.http_status_code() == status_codes::NotFound) {   // if the table does not exist
     message.reply(status_codes::NotFound);
     return;
   }
-
+  //Place entity and parse properties
   table_entity entity {retrieve_result.entity()};
   table_entity::properties_type properties {entity.properties()};
 
