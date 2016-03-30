@@ -206,6 +206,10 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
+  else if(paths[0] == "AddPropertyAdmin" || paths[0] == "UpdatePropertyAdmin"){
+    message.reply(status_codes::NotImplemented);
+    return;
+  }
 
   cloud_table table {table_cache.lookup_table(paths[1])};
   if ( ! table.exists()) {
