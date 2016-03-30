@@ -196,7 +196,7 @@ unordered_map<string,string> get_json_bourne(http_request message) {
 
     Operation:
       Returns a JSON object with all properties of a requested entity.
-    Parameters:
+    Body:
       None.
     Administrative URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
@@ -210,7 +210,7 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       Returns a JSON array of objects containing all entities in the requested
       table which have all of the requested properties (regardless of value).
       Each element in the JSON array is a single entity.
-    Parameters:
+    Body:
       JSON object where the name is the property name and the value is "*".
       E.g. {"born":"*", "art":"*"} would return all entities in the requested
       table which have properties "born" and "art".
@@ -223,7 +223,7 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Operation:
       Returns a JSON array of objects with all entities in a
       requested partition. Each element in the JSON array is a single entity.
-    Parameters:
+    Body:
       None.
     Administrative URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
@@ -241,7 +241,7 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       The partition and row names of each entity are returned as if they were
       a property of the entity - that is, as the values of properties named
       "Partition" and "Row" respectively.
-    Parameters:
+    Body:
       None.
     Administrative URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
