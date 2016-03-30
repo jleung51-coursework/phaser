@@ -235,6 +235,8 @@ void handle_get(http_request message) {
   const string userid = paths[1];
   const string password_given = json_body_password_iterator->second;
   string password_actual;
+  string authenticated_partition;
+  string authenticated_row;
 
   if(password_given.empty()) {
     message.reply(status_codes::BadRequest);
@@ -259,23 +261,9 @@ void handle_get(http_request message) {
       message.reply(status_codes::InternalError);
       return;
     }
-
-    if(userid == it->row_key()) {
+    else if(userid == it->row_key()) {
       found_userid = true;
-      prop_str_vals_t properties = get_string_properties(it->properties());
-
-      bool found_pw_prop = false;
-      for(auto p : properties) {
-        if(p.first == auth_table_password_prop) {
-          password_actual = p.second;
-          found_pw_prop = true;
-        }
-      }
-      if(!found_pw_prop) {
-        // "Password" property not found
-        message.reply(status_codes::InternalError);
-        return;
-      }
+      break;
     }
 
   }
@@ -285,7 +273,27 @@ void handle_get(http_request message) {
     message.reply(status_codes::NotFound);
     return;
   }
-  else if(password_given != password_actual) {
+
+  prop_str_vals_t properties = get_string_properties(it->properties());
+  for(auto p : properties) {
+    string property_name = p.first;
+    if(property_name == auth_table_password_prop) {
+      password_actual = p.second;
+    }
+    else if(property_name == auth_table_partition_prop) {
+      authenticated_partition = p.second;
+    }
+    else if(property_name == auth_table_row_prop) {
+      authenticated_row = p.second;
+    }
+    else {
+      // Invalid property
+      message.reply(status_codes::InternalError);
+      return;
+    }
+  }
+
+  if(password_given != password_actual) {
     // Incorrect Password
     // Same status code as incorrect user ID for security purposes
     message.reply(status_codes::NotFound);
