@@ -25,6 +25,8 @@ using azure::storage::edm_type;
 using azure::storage::entity_property;
 using azure::storage::table_entity;
 using azure::storage::table_operation;
+using azure::storage::table_query;
+using azure::storage::table_query_iterator;
 using azure::storage::table_request_options;
 using azure::storage::table_result;
 using azure::storage::table_shared_access_policy;
@@ -224,10 +226,18 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  // No 'password' property
+  // No 'Password' property
   else if(json_body_password_iterator == json_body.end()) {
     message.reply(status_codes::BadRequest);
     return;
+  }
+
+  const string userid = paths[1];
+  const string password_given = json_body_password_iterator->second;
+  string password_actual;
+
+  if(password_given.empty()) {
+    message.reply(status_codes::BadRequest);
   }
 
   cloud_table table {table_cache.lookup_table(auth_table_name)};
@@ -235,6 +245,54 @@ void handle_get(http_request message) {
     message.reply(status_codes::InternalError);
     return;
   }
+
+  // Search through the table AuthTable, partition Userid
+  table_query query {};
+  table_query_iterator end;
+  table_query_iterator it = table.execute_query(query);
+
+  bool found_userid = false;
+  while (it != end) {
+
+    // Only one partition should exist, named Userid
+    if(it->partition_key() != auth_table_userid_partition) {
+      message.reply(status_codes::InternalError);
+      return;
+    }
+
+    if(userid == it->row_key()) {
+      found_userid = true;
+      prop_str_vals_t properties = get_string_properties(it->properties());
+
+      bool found_pw_prop = false;
+      for(auto p : properties) {
+        if(p.first == auth_table_password_prop) {
+          password_actual = p.second;
+          found_pw_prop = true;
+        }
+      }
+      if(!found_pw_prop) {
+        // "Password" property not found
+        message.reply(status_codes::InternalError);
+        return;
+      }
+    }
+
+  }
+
+  if(!found_userid) {
+    // User ID not found
+    message.reply(status_codes::NotFound);
+    return;
+  }
+  else if(password_given != password_actual) {
+    // Incorrect Password
+    // Same status code as incorrect user ID for security purposes
+    message.reply(status_codes::NotFound);
+    return;
+  }
+
+  // TODO: Find and return token
 
   message.reply(status_codes::NotImplemented);
   return;
