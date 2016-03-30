@@ -211,12 +211,12 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  else if(message.headers()["Content-type"] != "application/json") {
+  else if(!has_json_body(message)) {
     message.reply(status_codes::BadRequest);
     return;
   }
 
-  unordered_map<string, string> json_body {get_json_body(message)};
+  unordered_map<string, string> json_body {get_json_bourne(message)};
   unordered_map<string, string>::const_iterator json_body_password_iterator
     {json_body.find("Password")};
 
