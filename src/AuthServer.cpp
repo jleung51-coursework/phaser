@@ -25,6 +25,8 @@ using azure::storage::edm_type;
 using azure::storage::entity_property;
 using azure::storage::table_entity;
 using azure::storage::table_operation;
+using azure::storage::table_query;
+using azure::storage::table_query_iterator;
 using azure::storage::table_request_options;
 using azure::storage::table_result;
 using azure::storage::table_shared_access_policy;
@@ -88,8 +90,24 @@ prop_str_vals_t get_string_properties (const table_entity::properties_type& prop
 }
 
 /*
+  Return true if an HTTP request has a JSON body
+
+  This routine can be called multiple times on the same message.
+ */
+bool has_json_body (http_request message) {
+  return message.headers()["Content-type"] == "application/json";
+}
+
+/*
   Given an HTTP message with a JSON body, return the JSON
   body as an unordered map of strings to strings.
+  get_json_body and get_json_bourne are valid and identical function calls.
+
+  If the message has no JSON body, return an empty map.
+
+  THIS ROUTINE CAN ONLY BE CALLED ONCE FOR A GIVEN MESSAGE
+  (see http://microsoft.github.io/cpprestsdk/classweb_1_1http_1_1http__request.html#ae6c3d7532fe943de75dcc0445456cbc7
+  for source of this limit).
 
   Note that all types of JSON values are returned as strings.
   Use C++ conversion utilities to convert to numbers or dates
@@ -123,6 +141,10 @@ unordered_map<string,string> get_json_body(http_request message) {
     }
   }
   return results;
+}
+
+unordered_map<string,string> get_json_bourne(http_request message) {
+ return get_json_body(message);
 }
 
 /*
@@ -171,6 +193,24 @@ pair<status_code,string> do_get_token (const cloud_table& data_table,
 
 /*
   Top-level routine for processing all HTTP GET requests.
+
+  HTTP URL for this server is defined in this file as http://localhost:34570.
+
+  Possible operations:
+
+    Operation name:
+      GetReadToken
+    Operation:
+      Returns a JSON object with a single property named "token", with the
+      value of a string which is the authentication token from Microsoft Azure.
+      The authentication token allows for read operations ONLY.
+    Body:
+      JSON object with a single property named "Password", with the value of
+      a string which is the password for the user ID provided in the URI.
+    URI:
+      http://localhost:34570/GetReadToken/USER_ID
+
+  TODO: GetUpdateToken has not been implemented yet.
  */
 void handle_get(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
@@ -181,7 +221,130 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if(paths[0] == get_update_token_op) {
     message.reply(status_codes::NotImplemented);
+    return;
+  }
+  else if(paths[0] != get_read_token_op) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  else if(!has_json_body(message)) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+
+  unordered_map<string, string> json_body {get_json_bourne(message)};
+  unordered_map<string, string>::const_iterator json_body_password_iterator
+    {json_body.find("Password")};
+
+  if(json_body.size() != 1) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // No 'Password' property
+  else if(json_body_password_iterator == json_body.end()) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+
+  const string userid = paths[1];
+  const string password_given = json_body_password_iterator->second;
+  string password_actual;
+  string authenticated_partition;
+  string authenticated_row;
+
+  if(password_given.empty()) {
+    message.reply(status_codes::BadRequest);
+  }
+
+  cloud_table table {table_cache.lookup_table(auth_table_name)};
+  if(!table.exists()) {
+    message.reply(status_codes::InternalError);
+    return;
+  }
+
+  // Search through the table AuthTable, partition Userid
+  table_query query {};
+  table_query_iterator end;
+  table_query_iterator it = table.execute_query(query);
+  bool found_userid = false;
+  while (it != end) {
+    // Only one partition should exist, named Userid
+    if(it->partition_key() != auth_table_userid_partition) {
+      message.reply(status_codes::InternalError);
+      return;
+    }
+    else if(userid == it->row_key()) {
+      found_userid = true;
+      break;
+    }
+  }
+  if(!found_userid) {
+    // User ID not found
+    message.reply(status_codes::NotFound);
+    return;
+  }
+
+  prop_str_vals_t properties = get_string_properties(it->properties());
+  for(auto p : properties) {
+    string property_name = p.first;
+    if(property_name == auth_table_password_prop) {
+      password_actual = p.second;
+    }
+    else if(property_name == auth_table_partition_prop) {
+      authenticated_partition = p.second;
+    }
+    else if(property_name == auth_table_row_prop) {
+      authenticated_row = p.second;
+    }
+    else {
+      // Invalid property
+      message.reply(status_codes::InternalError);
+      return;
+    }
+  }
+
+  if( password_actual.empty() ||
+      authenticated_partition.empty() ||
+      authenticated_row.empty() ) {
+    // At least one of the necessary properties not found
+    message.reply(status_codes::InternalError);
+    return;
+  }
+  else if(password_given != password_actual) {
+    // Incorrect Password
+    // Same status code as incorrect user ID for security purposes
+    message.reply(status_codes::NotFound);
+    return;
+  }
+
+  table = table_cache.lookup_table(data_table_name);
+  if(!table.exists()) {
+    message.reply(status_codes::InternalError);
+    return;
+  }
+
+  pair<status_code, string> result = do_get_token
+  (
+    table,
+    authenticated_partition,
+    authenticated_row,
+    table_shared_access_policy::permissions::read
+  );
+
+  if(result.first == status_codes::OK) {
+    vector<pair<string, value>> json_token;
+    json_token.push_back( make_pair("token", value::string(result.second)) );
+    message.reply(result.first, value::object(json_token));
+    return;
+  }
+  else {
+    message.reply(result.first);
+    return;
+  }
 }
 
 /*
