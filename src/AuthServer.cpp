@@ -181,7 +181,7 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  message.reply(status_codes::NotImplemented);
+    message.reply(status_codes::NotImplemented);
 }
 
 /*
