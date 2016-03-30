@@ -281,6 +281,7 @@ void handle_get(http_request message) {
       found_userid = true;
       break;
     }
+    ++it;
   }
   if(!found_userid) {
     // User ID not found
