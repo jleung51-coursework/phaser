@@ -924,9 +924,9 @@ public:
 };
 
 SUITE(UPDATE_AUTH) {
+  // Test Fixture for Put Auth
   TEST_FIXTURE(AuthFixture,  PutAuth) {
     pair<string,string> added_prop {make_pair(string("born"),string("1942"))};
-
     cout << "Requesting token" << endl;
     pair<status_code,string> token_res {
       get_update_token(AuthFixture::auth_addr,
