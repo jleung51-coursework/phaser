@@ -181,7 +181,10 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  message.reply(status_codes::NotImplemented);
+  else if(paths[0] == "AddPropertyAdmin" || paths[0] == "UpdatePropertyAdmin"){
+    message.reply(status_codes::NotImplemented);
+    return;
+  }
 }
 
 /*
