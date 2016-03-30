@@ -23,6 +23,8 @@ using azure::storage::cloud_table;
 using azure::storage::cloud_table_client;
 using azure::storage::edm_type;
 using azure::storage::entity_property;
+using azure::storage::query_comparison_operator;
+using azure::storage::query_logical_operator;
 using azure::storage::table_entity;
 using azure::storage::table_operation;
 using azure::storage::table_query;
@@ -268,21 +270,22 @@ void handle_get(http_request message) {
 
   // Search through the table AuthTable, partition Userid
   table_query query {};
+  query.set_filter_string( table_query::combine_filter_conditions(
+    table_query::generate_filter_condition(
+      U("PartitionKey"),
+      query_comparison_operator::equal,
+      U("Userid")
+    ),
+    query_logical_operator::op_and,
+    table_query::generate_filter_condition(
+      U("RowKey"),
+      query_comparison_operator::equal,
+      U(userid)
+    )
+  ));
   table_query_iterator end;
   table_query_iterator it = table.execute_query(query);
-  bool found_userid = false;
-  while (it != end) {
-    // Only one partition should exist, named Userid
-    if(it->partition_key() != auth_table_userid_partition) {
-      message.reply(status_codes::InternalError);
-      return;
-    }
-    else if(userid == it->row_key()) {
-      found_userid = true;
-      break;
-    }
-  }
-  if(!found_userid) {
+  if(it == end) {
     // User ID not found
     message.reply(status_codes::NotFound);
     return;
