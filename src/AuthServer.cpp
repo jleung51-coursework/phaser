@@ -88,6 +88,15 @@ prop_str_vals_t get_string_properties (const table_entity::properties_type& prop
 }
 
 /*
+  Return true if an HTTP request has a JSON body
+
+  This routine can be called multiple times on the same message.
+ */
+bool has_json_body (http_request message) {
+  return message.headers()["Content-type"] == "application/json";
+}
+
+/*
   Given an HTTP message with a JSON body, return the JSON
   body as an unordered map of strings to strings.
 
