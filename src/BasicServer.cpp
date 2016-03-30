@@ -199,15 +199,6 @@ void handle_get(http_request message) {
   if (paths.size() < 2) {
     message.reply(status_codes::BadRequest);
     return;
-  }   
-
-    unordered_map<string,string> json_body {get_json_body (message)};
-    for(const auto v : json_body){
-      if(v.second != "*"){
-        message.reply(status_codes::BadRequest);
-        return;
-      }
-
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
@@ -394,7 +385,7 @@ void handle_put(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != update_entity_admin }} paths[0] != update_entity_auth) {
+  else if (paths[0] != update_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -411,13 +402,7 @@ void handle_put(http_request message) {
     return;
   }
 
-  string token {paths[2]};
-  if(/*token is only good for reading*/){
-    message.reply(status_codes::Forbidden);
-    return;
-  }
-
-  table_entity entity {paths[3], paths[4]}; // partition and row
+  table_entity entity {paths[2], paths[3]}; // partition and row
 
   // Update entity
   cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
@@ -430,7 +415,6 @@ void handle_put(http_request message) {
   table_result op_result {table.execute(operation)};
 
   message.reply(status_codes::OK);
-  return;
 }
 
 /*
