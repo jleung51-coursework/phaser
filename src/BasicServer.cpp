@@ -188,8 +188,69 @@ unordered_map<string,string> get_json_bourne(http_request message) {
 /*
   Top-level routine for processing all HTTP GET requests.
 
-  GET is the only request that has no command. All
-  operands specify the value(s) to be retrieved.
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation names: ReadEntityAdmin, ReadEntityAuth (with authentication token)
+
+  Possible operations:
+
+    Operation:
+      Returns a JSON object with all properties of a requested entity.
+    Parameters:
+      None.
+    Administrative URI:
+      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
+      (ROW_NAME cannot be "*")
+    Authenticated URI:
+      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
+      (ROW_NAME cannot be "*")
+
+    Operation:
+      Returns a JSON array of objects containing all entities in the requested
+      table which have all of the requested properties (regardless of value).
+      Each element in the JSON array is a single entity.
+    Parameters:
+      JSON object where the name is the property name and the value is "*".
+      E.g. {"born":"*", "art":"*"} would return all entities in the requested
+      table which have properties "born" and "art".
+    Administrative URI:
+      http://localhost:34568/ReadEntityAdmin/TABLE_NAME
+    Authenticated URI:
+      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
+
+    Operation:
+      Returns a JSON array of objects with all entities in a
+      requested partition. Each element in the JSON array is a single entity.
+    Parameters:
+      None.
+    Administrative URI:
+      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
+      (row name can only be "*")
+    Authenticated URI:
+      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
+      (row name can only be "*")
+
+    Operation:
+      Returns a JSON array of objects with all entities in a
+      requested table. Each element in the JSON array is a single entity,
+      and the (JSON) properties of an element are the (database) properties of
+      the entity.
+      The partition and row names of each entity are returned as if they were
+      a property of the entity - that is, as the values of properties named
+      "Partition" and "Row" respectively.
+    Parameters:
+      None.
+    Administrative URI:
+      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
+      (ROW_NAME can only be "*")
+    Authenticated URI:
+      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
+      (ROW_NAME can only be "*")
+    // TODO: This does not safely handle a property named "Partition" or "Row".
  */
 void handle_get(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
