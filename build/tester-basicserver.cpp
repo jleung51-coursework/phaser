@@ -968,4 +968,26 @@ SUITE(UPDATE_AUTH) {
     cout << AuthFixture::property << endl;
     compare_json_values (expect, ret_res.second);
   }
+  // Test Fixture for Get Auth
+  TEST_FIXTURE(AuthFixture, GetAuth){
+        pair<string,string> added_prop {make_pair(string("born"),string("1942"))};
+    cout << "Requesting token" << endl;
+    pair<status_code,string> token_res {
+      get_read_token(AuthFixture::auth_addr,
+                       AuthFixture::userid,
+                       AuthFixture::user_pwd)};
+    cout << "Token response " << token_res.first << endl;
+    CHECK_EQUAL (token_res.first, status_codes::OK);
+
+    pair<status_code,value> result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + update_entity_auth + "/"
+                  + AuthFixture::table + "/"
+                  + token_res.second + "/"
+                  + AuthFixture::partition + "/"
+                  + AuthFixture::row
+                  )};
+    CHECK_EQUAL(status_codes::OK, result.first);
+  }
 }
