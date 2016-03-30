@@ -201,7 +201,43 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if(paths[0] == get_update_token_op) {
     message.reply(status_codes::NotImplemented);
+    return;
+  }
+  else if(paths[0] != get_read_token_op) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  else if(message.headers()["Content-type"] != "application/json") {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+
+  unordered_map<string, string> json_body {get_json_body(message)};
+  unordered_map<string, string>::const_iterator json_body_password_iterator
+    {json_body.find("Password")};
+
+  if(json_body.size() != 1) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  // No 'password' property
+  else if(json_body_password_iterator == json_body.end()) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+
+  cloud_table table {table_cache.lookup_table(auth_table_name)};
+  if(!table.exists()) {
+    message.reply(status_codes::InternalError);
+    return;
+  }
+
+  message.reply(status_codes::NotImplemented);
+  return;
 }
 
 /*
