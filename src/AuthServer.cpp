@@ -252,10 +252,8 @@ void handle_get(http_request message) {
   table_query query {};
   table_query_iterator end;
   table_query_iterator it = table.execute_query(query);
-
   bool found_userid = false;
   while (it != end) {
-
     // Only one partition should exist, named Userid
     if(it->partition_key() != auth_table_userid_partition) {
       message.reply(status_codes::InternalError);
@@ -265,9 +263,7 @@ void handle_get(http_request message) {
       found_userid = true;
       break;
     }
-
   }
-
   if(!found_userid) {
     // User ID not found
     message.reply(status_codes::NotFound);
@@ -293,14 +289,44 @@ void handle_get(http_request message) {
     }
   }
 
-  if(password_given != password_actual) {
+  if( password_actual.empty() ||
+      authenticated_partition.empty() ||
+      authenticated_row.empty() ) {
+    // At least one of the necessary properties not found
+    message.reply(status_codes::InternalError);
+    return;
+  }
+  else if(password_given != password_actual) {
     // Incorrect Password
     // Same status code as incorrect user ID for security purposes
     message.reply(status_codes::NotFound);
     return;
   }
 
-  // TODO: Find and return token
+  table = table_cache.lookup_table(data_table_name);
+  if(!table.exists()) {
+    message.reply(status_codes::InternalError);
+    return;
+  }
+
+  pair<status_code, string> result = do_get_token
+  (
+    table,
+    authenticated_partition,
+    authenticated_row,
+    table_shared_access_policy::permissions::read
+  );
+
+  if(result.first == status_codes::OK) {
+    vector<pair<string, value>> json_token;
+    json_token.push_back( make_pair("token", value::string(result.second)) );
+    message.reply(result.first, value::object(json_token));
+    return;
+  }
+  else {
+    message.reply(result.first);
+    return;
+  }
 
   message.reply(status_codes::NotImplemented);
   return;
