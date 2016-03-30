@@ -193,6 +193,7 @@ pair<status_code,string> do_get_token (const cloud_table& data_table,
 
 /*
   Top-level routine for processing all HTTP GET requests.
+  TODO: GetUpdateToken has not been implemented yet.
  */
 void handle_get(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
@@ -327,9 +328,6 @@ void handle_get(http_request message) {
     message.reply(result.first);
     return;
   }
-
-  message.reply(status_codes::NotImplemented);
-  return;
 }
 
 /*
