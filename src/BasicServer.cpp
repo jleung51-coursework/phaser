@@ -453,11 +453,10 @@ void handle_delete(http_request message) {
     table_result op_result {table.execute(operation)};
 
     int code {op_result.http_status_code()};
-    if (code == status_codes::OK ||
-	code == status_codes::NoContent)
-      message.reply(status_codes::OK);
-    else
-      message.reply(code);
+    if (code == status_codes::NoContent) {
+      code = status_codes::OK;
+    }
+    message.reply(code);
   }
   else {
     message.reply(status_codes::BadRequest);
