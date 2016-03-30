@@ -193,6 +193,23 @@ pair<status_code,string> do_get_token (const cloud_table& data_table,
 
 /*
   Top-level routine for processing all HTTP GET requests.
+
+  HTTP URL for this server is defined in this file as http://localhost:34570.
+
+  Possible operations:
+
+    Operation name:
+      GetReadToken
+    Operation:
+      Returns a JSON object with a single property named "token", with the
+      value of a string which is the authentication token from Microsoft Azure.
+      The authentication token allows for read operations ONLY.
+    Body:
+      JSON object with a single property named "Password", with the value of
+      a string which is the password for the user ID provided in the URI.
+    URI:
+      http://localhost:34570/GetReadToken/USER_ID
+
   TODO: GetUpdateToken has not been implemented yet.
  */
 void handle_get(http_request message) {
