@@ -903,7 +903,7 @@ public:
 };
 
 SUITE(UPDATE_AUTH) {
-  TEST_FIXTURE(AuthFixture,  PutAuth) {
+  TEST_FIXTURE(AuthFixture, PutAuth) {
     pair<string,string> added_prop {make_pair(string("born"),string("1942"))};
 
     cout << "Requesting token" << endl;
@@ -914,7 +914,119 @@ SUITE(UPDATE_AUTH) {
     cout << "Token response " << token_res.first << endl;
     CHECK_EQUAL (token_res.first, status_codes::OK);
 
+// address was not found
     pair<status_code,value> result {
+      do_request (methods::PUT,
+                  "NonexistentAddr"
+                  + update_entity_auth + "/"
+                  + AuthFixture::table + "/"
+                  + token_res.second + "/"
+                  + AuthFixture::partition + "/"
+                  + AuthFixture::row,
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+// Weird command
+    result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + "DoAnything" + "/"
+                  + AuthFixture::table + "/"
+                  + token_res.second + "/"
+                  + AuthFixture::partition + "/"
+                  + AuthFixture::row,
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+// table DNE
+    result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + update_entity_auth + "/"
+                  + "NonexistentTable" + "/"
+                  + token_res.second + "/"
+                  + AuthFixture::partition + "/"
+                  + AuthFixture::row,
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+// Partition DNE
+    result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + update_entity_auth + "/"
+                  + AuthFixture::table + "/"
+                  + token_res.second + "/"
+                  + "NonexistentPartition" + "/"
+                  + AuthFixture::row,
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+// Less than four parameters were provided
+    result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + update_entity_auth + "/"
+                  + AuthFixture::table + "/"
+                  + AuthFixture::row,
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+// row DNE
+    result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + update_entity_auth + "/"
+                  + AuthFixture::table + "/"
+                  + token_res.second + "/"
+                  + AuthFixture::partition + "/"
+                  + "NonexistentRow",
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+// The specified entity exists but the token is only valid for reading, not updating
+    cout << "Requesting fake token" << endl;
+    pair<status_code,string> token_fake {
+      get_read_token(AuthFixture::auth_addr,
+                       AuthFixture::userid,
+                       AuthFixture::user_pwd)};
+    cout << "Token response " << token_res.first << endl;
+    CHECK_EQUAL (token_fake.first, status_codes::OK);
+
+    result {
+      do_request (methods::PUT,
+                  string(AuthFixture::addr)
+                  + update_entity_auth + "/"
+                  + AuthFixture::table + "/"
+                  + token_fake.second + "/"
+                  + AuthFixture::partition + "/"
+                  + AuthFixture::row,
+                  value::object (vector<pair<string,value>>
+                                   {make_pair(added_prop.first,
+                                              value::string(added_prop.second))})
+                  )};
+    CHECK_EQUAL(status_codes::Forbidden, result.first);
+
+// Write authorized and successful
+    result {
       do_request (methods::PUT,
                   string(AuthFixture::addr)
                   + update_entity_auth + "/"
@@ -928,6 +1040,7 @@ SUITE(UPDATE_AUTH) {
                   )};
     CHECK_EQUAL(status_codes::OK, result.first);
 
+// check if updates properly
     pair<status_code,value> ret_res {
       do_request (methods::GET,
                   string(AuthFixture::addr)
