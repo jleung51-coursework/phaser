@@ -295,7 +295,7 @@ int put_entity(const string& addr, const string& table, const string& partition,
               const vector<pair<string,value>>& props) {
   pair<status_code,value> result {
     do_request (methods::PUT,
-               addr + "UpdateEntity/" + table + "/" + partition + "/" + row,
+               addr + update_entity_admin + "/" + table + "/" + partition + "/" + row,
                value::object (props))};
   return result.first;
 }
