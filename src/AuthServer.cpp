@@ -229,7 +229,7 @@ void handle_get(http_request message) {
     message.reply(status_codes::NotImplemented);
     return;
   }
-  else if(paths[0] != get_read_token_op or paths[0] != get_update_token_op) {
+  else if(paths[0] != get_read_token_op || paths[0] != get_update_token_op) {
     message.reply(status_codes::BadRequest);
     return;
   }
