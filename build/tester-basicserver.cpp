@@ -901,7 +901,7 @@ public:
     }
   }
 };
-/*
+
 SUITE(UPDATE_AUTH) {
   TEST_FIXTURE(AuthFixture,  PutAuth) {
     pair<string,string> added_prop {make_pair(string("born"),string("1942"))};
@@ -948,7 +948,7 @@ SUITE(UPDATE_AUTH) {
     compare_json_values (expect, ret_res.second);
   }
 }
-*/
+
 SUITE(GET_READ_TOKEN){
   TEST_FIXTURE(AuthFixture, GetReadToken){
     pair<status_code, value> result;
