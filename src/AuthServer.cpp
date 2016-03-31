@@ -225,7 +225,7 @@ void handle_get(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if(paths[0] != get_read_token_op || paths[0] != get_update_token_op) {
+  else if(paths[0] != get_read_token_op && paths[0] != get_update_token_op) {
     message.reply(status_codes::BadRequest);
     return;
   }
