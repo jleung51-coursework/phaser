@@ -903,6 +903,7 @@ public:
     if (put_result != status_codes::OK) {
       throw std::exception();
     }
+    do_request("GET", "http://localhost:34568/ReadEntityAuth/AuthTable/");
     // Ensure userid and password in system
     int user_result {put_entity (addr,
                                  auth_table,
