@@ -338,6 +338,26 @@ pair<status_code,string> get_update_token(const string& addr,  const string& use
 }
 
 /*
+  Utility to get a token good for reading a specific entry
+  from a specific table for one day.
+ */
+pair<status_code,string> get_read_token(const string& addr,  const string& userid, const string& password) {
+  value pwd {build_json_object (vector<pair<string,string>> {make_pair("Password", password)})};
+  pair<status_code,value> result {do_request (methods::GET,
+                                              addr +
+                                              get_read_token_op + "/" +
+                                              userid,
+                                              pwd
+                                              )};
+  cerr << "token " << result.second << endl;
+  if (result.first != status_codes::OK)
+    return make_pair (result.first, "");
+  else {
+    string token {result.second["token"].as_string()};
+    return make_pair (result.first, token);
+  }
+}
+/*
   A sample fixture that ensures TestTable exists, and
   at least has the entity Franklin,Aretha/USA
   with the property "Song": "RESPECT".
