@@ -448,7 +448,7 @@ void handle_put(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if(paths[0] == "AddPropertyAdmin" || paths[0] == "UpdatePropertyAdmin"){
+  else if(paths[0] == add_property_admin || paths[0] == update_property_admin){
     message.reply(status_codes::NotImplemented);
     return;
   }
