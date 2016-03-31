@@ -192,7 +192,7 @@ unordered_map<string,string> get_json_bourne(http_request message) {
 
   HTTP URL for this server is defined in this file as http://localhost:34568.
 
-  Operation names: ReadEntityAdmin, ReadEntityAuth (with authentication token)
+  Operation names: ReadEntityAdmin, ReadEntityAuth
 
   Possible operations:
 
@@ -259,7 +259,7 @@ void handle_get(http_request message) {
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation name and table name
-  if (paths.size() < 2) 
+  if (paths.size() < 2)
   {
     message.reply(status_codes::BadRequest);
     return;
@@ -267,7 +267,7 @@ void handle_get(http_request message) {
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
   //Check for use of admin or auth
-  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth) 
+  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth)
   {
     message.reply(status_codes::BadRequest);
     return;
