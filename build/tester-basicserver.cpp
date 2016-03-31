@@ -970,7 +970,7 @@ SUITE(GET_READ_TOKEN){
       string(AuthFixture::auth_addr)  
       + string(AuthFixture::userid), 
       value::object(passwordbody) );
-    CHECK_EQUAL(status_codes::OK, result.first);
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
     passwordbody.clear();
 
     //wrong property
