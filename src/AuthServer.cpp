@@ -229,7 +229,7 @@ void handle_get(http_request message) {
     message.reply(status_codes::NotImplemented);
     return;
   }
-  else if(paths[0] != get_read_token_op) {
+  else if(paths[0] != get_read_token_op or paths[0] != get_update_token_op) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -330,13 +330,26 @@ void handle_get(http_request message) {
     return;
   }
 
-  pair<status_code, string> result = do_get_token
+  // get a read or read|update token
+  pair<status_code, string> result;
+  if(paths[0] == get_read_token_op) {
+  result = do_get_token
   (
     table,
     authenticated_partition,
     authenticated_row,
     table_shared_access_policy::permissions::read
   );
+  }
+  else {
+  result = do_get_token
+  (
+    table,
+    authenticated_partition,
+    authenticated_row,
+    table_shared_access_policy::permissions::read | table_shared_access_policy::permissions::update
+  );
+  }
 
   if(result.first == status_codes::OK) {
     vector<pair<string, value>> json_token;
