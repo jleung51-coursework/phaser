@@ -377,20 +377,32 @@ void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** PUT " << path << endl;
 
+  string token {""};
+  string partition {""};
+  string row {""};
+
   auto paths = uri::split_path(path);
   // Need at least an operation, table name, partition, and row
   if (paths.size() < 4) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  // [0] refers to the operation name
-  // Evaluated after size() to ensure legitimate access
-  else if (paths[0] != update_entity_admin) {
-    message.reply(status_codes::BadRequest);
-    return;
-  }
   else if(paths[0] == "AddPropertyAdmin" || paths[0] == "UpdatePropertyAdmin"){
     message.reply(status_codes::NotImplemented);
+    return;
+  }
+  else if(paths[0] == update_entity_auth){
+    partition = paths[3];
+    row = paths[4]; 
+  }
+  // [0] refers to the operation name
+  // Evaluated after size() to ensure legitimate access
+  else if (paths[0] == update_entity_admin) {
+    partition = paths[2];
+    row = paths[3]; 
+  }
+  else {
+    message.reply(status_codes::BadRequest);
     return;
   }
 
@@ -402,7 +414,7 @@ void handle_put(http_request message) {
     return;
   }
 
-  table_entity entity {paths[2], paths[3]}; // partition and row
+  table_entity entity {partition, row}; // partition and row
 
   // Update entity
   cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
@@ -411,10 +423,21 @@ void handle_put(http_request message) {
     properties[v.first] = entity_property {v.second};
   }
 
-  table_operation operation {table_operation::insert_or_merge_entity(entity)};
-  table_result op_result {table.execute(operation)};
+  try {
+    table_operation operation {table_operation::insert_or_merge_entity(entity)};
+    table_result op_result {table.execute(operation)};
+  }
+  catch (const storage_exception& e) {
+    cout << "Azure Table Storage error: " << e.what() << endl;
+    cout << e.result().extended_error().message() << endl;
+    if (e.result().http_status_code() == status_codes::Forbidden)
+      message.reply(status_codes::Forbidden);
+    else
+      message.reply(status_codes::InternalError);
+  }
 
   message.reply(status_codes::OK);
+  return;
 }
 
 /*
