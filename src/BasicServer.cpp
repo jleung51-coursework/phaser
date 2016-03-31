@@ -213,7 +213,9 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       table which have all of the requested properties (regardless of value).
       Each element in the JSON array is a single entity.
     Body:
-      JSON object where the name is the property name and the value is "*".
+      JSON object representing an array where each element is a property
+      represented by a string / JSON value pair. The first value of each element
+      is the property name, and the second value of each element is "*".
       E.g. {"born":"*", "art":"*"} would return all entities in the requested
       table which have properties "born" and "art".
     Administrative URI:
