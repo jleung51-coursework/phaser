@@ -980,9 +980,9 @@ SUITE(UPDATE_AUTH) {
     CHECK_EQUAL (token_res.first, status_codes::OK);
 
     pair<status_code,value> result {
-      do_request (methods::PUT,
+      do_request (methods::GET,
                   string(AuthFixture::addr)
-                  + update_entity_auth + "/"
+                  + read_entity_auth + "/"
                   + AuthFixture::table + "/"
                   + token_res.second + "/"
                   + AuthFixture::partition + "/"
