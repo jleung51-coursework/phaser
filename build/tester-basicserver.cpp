@@ -864,6 +864,7 @@ public:
   static constexpr const char* auth_table {"AuthTable"};
   static constexpr const char* auth_table_partition {"Userid"};
   static constexpr const char* auth_pwd_prop {"Password"};
+
   static constexpr const char* table {"DataTable"};
   static constexpr const char* partition {"USA"};
   static constexpr const char* row {"Franklin,Aretha"};
@@ -871,39 +872,95 @@ public:
   static constexpr const char* prop_val {"RESPECT"};
 
 public:
-  AuthFixture() { // creati
-    int make_result {create_table(addr, table)};
-    cerr << "create result " << make_result << endl;
-    if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
-      throw std::exception();
+  AuthFixture() {
+
+    // Create table DataTable and add a test entry
+    {
+      int make_result {create_table(addr, table)};
+      cerr << "create result " << make_result << endl;
+      if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
+        throw std::exception();
+      }
+      int put_result {put_entity (
+        addr,
+        table,
+        partition,
+        row,
+        property,
+        prop_val
+      )};
+      cerr << "data table insertion result " << put_result << endl;
+      if (put_result != status_codes::OK) {
+        throw std::exception();
+      }
     }
-    int put_result {put_entity (addr, table, partition, row, property, prop_val)};
-    cerr << "put result " << put_result << endl;
-    if (put_result != status_codes::OK) {
-      throw std::exception();
+
+    // Create table AuthTable and add an entry authenticating the test case
+    // in DataTable
+    {
+      int make_result {create_table(addr, auth_table)};
+      cerr << "create result " << make_result << endl;
+      if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
+        throw std::exception();
+      }
+
+      vector<pair<string, value>> properties;
+      properties.push_back( make_pair(string(auth_pwd_prop), value::string(user_pwd)) );
+      properties.push_back( make_pair("DataPartition", value::string(AuthFixture::partition)) );
+      properties.push_back( make_pair("DataRow", value::string(AuthFixture::row)) );
+
+      assert(properties.size() == 3);
+
+      int user_result {put_entity (
+        addr,
+        auth_table,
+        auth_table_partition,
+        userid,
+        properties
+      )};
+      cerr << "auth table insertion result " << user_result << endl;
+      if (user_result != status_codes::OK) {
+        throw std::exception();
+      }
     }
-    // Ensure userid and password in system
-    int user_result {put_entity (addr,
-                                 auth_table,
-                                 auth_table_partition,
-                                 userid,
-                                 auth_pwd_prop,
-                                 user_pwd)};
-    cerr << "user auth table insertion result " << user_result << endl;
-    if (user_result != status_codes::OK)
-      throw std::exception();
+
   }
 
   ~AuthFixture() {
-    int del_ent_result {delete_entity (addr, table, partition, row)};
-    if (del_ent_result != status_codes::OK) {
-      throw std::exception();
+
+    // Delete entry in DataTable
+    {
+      int del_ent_result {delete_entity (
+        addr,
+        table,
+        partition,
+        row
+      )};
+      cout << "delete datatable result " << del_ent_result << endl;
+      if (del_ent_result != status_codes::OK) {
+        throw std::exception();
+      }
     }
+
+    // Delete entry in AuthTable
+    {
+      int del_ent_result {delete_entity (
+        addr,
+        auth_table,
+        auth_table_partition,
+        userid
+      )};
+      cout << "delete authtable result " << del_ent_result << endl;
+      if (del_ent_result != status_codes::OK) {
+        throw std::exception();
+      }
+    }
+
   }
 };
 
 SUITE(UPDATE_AUTH) {
-  TEST_FIXTURE(AuthFixture,  PutAuth) {
+  TEST_FIXTURE(AuthFixture, PutAuth) {
     pair<string,string> added_prop {make_pair(string("born"),string("1942"))};
 
     cout << "Requesting token" << endl;
@@ -956,67 +1013,67 @@ SUITE(GET_READ_TOKEN){
 
     //correct everything
     passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/" 
-      + string(AuthFixture::userid), 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::OK, result.first);
     passwordbody.clear();
 
     //no get read token
     passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr)  
-      + string(AuthFixture::userid), 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
     passwordbody.clear();
 
     //wrong property
     passwordbody.push_back(  make_pair( "NotPassword", value::string(user_pwd) )  );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/" 
-      + string(AuthFixture::userid), 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
     passwordbody.clear();
 
     //userid not found
     passwordbody.push_back(  make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) )  );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/"  
-      + "WrongUser", 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + "WrongUser",
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::NotFound, result.first);
 
     //password wrong
     passwordbody.push_back(  make_pair( string(AuthFixture::auth_pwd_prop), value::string("WrongPassword") )  );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/"  
-      + string(AuthFixture::userid),  
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::NotFound, result.first);
 
     //userid missing
     passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/" 
-      + "/", 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + "/",
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
     passwordbody.clear();
 
     //empty password
     passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string("") ) );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/" 
-      + string(AuthFixture::userid), 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
     passwordbody.clear();
@@ -1024,10 +1081,10 @@ SUITE(GET_READ_TOKEN){
     //extra properties
     passwordbody.push_back( make_pair( "NotAProperty", value::string("NotAPassword") ) );
     passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_read_token_op + "/" 
-      + string(AuthFixture::userid), 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_read_token_op + "/"
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::BadRequest, result.first);
     passwordbody.clear();
@@ -1043,14 +1100,14 @@ SUITE(GET_UPDATE_TOKEN){
 
    //correct everything
     passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
-    result = do_request( methods::GET, 
-      string(AuthFixture::auth_addr) 
-      + get_update_token_op + "/" 
-      + string(AuthFixture::userid), 
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_token_op + "/"
+      + string(AuthFixture::userid),
       value::object(passwordbody) );
     CHECK_EQUAL(status_codes::OK, result.first);
     passwordbody.clear();
-  
+
   }
 
 }
