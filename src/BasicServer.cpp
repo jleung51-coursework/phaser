@@ -27,6 +27,8 @@
 
 #include "../include/azure_keys.h"
 
+#include "../include/ServerUtils.h"
+
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
 using azure::storage::storage_exception;
@@ -449,7 +451,16 @@ void handle_put(http_request message) {
   else if(paths[0] == "AddPropertyAdmin" || paths[0] == "UpdatePropertyAdmin"){
     message.reply(status_codes::NotImplemented);
     return;
-  } 
+  }
+  else if(paths[0] == update_entity_auth){
+    unordered_map<string,string> json_body {get_json_bourne (message)};
+    message.reply(update_with_token (message, tables_endpoint, json_body));
+    return;
+  }
+  else if(paths[0] == add_property_admin || paths[0] == update_property_admin) {
+    message.reply(status_codes::NotImplemented);
+    return;
+  }
   else if (paths[0] != update_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
@@ -476,6 +487,7 @@ void handle_put(http_request message) {
   table_result op_result {table.execute(operation)};
 
   message.reply(status_codes::OK);
+  return;
 }
 
 /*
