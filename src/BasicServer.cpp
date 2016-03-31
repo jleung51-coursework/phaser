@@ -460,6 +460,66 @@ void handle_post(http_request message) {
 
 /*
   Top-level routine for processing all HTTP PUT requests.
+
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation names:
+    UpdateEntityAdmin, UpdateEntityAuth
+    AddPropertyAdmin
+    UpdatePropertyAdmin
+
+  Possible operations:
+
+    Operation:
+      Updates an entity with the given property(ies), in addition to any
+      existing properties.
+      If the property already exists for a given entity, the value will
+      be replaced.
+    Body:
+      JSON object representing an array where each element is a property
+      represented by a string/value pair. The first value of each element
+      is the property name, and the second value of each element is the
+      property value.
+      E.g. {"born":"1950", "height":"180"} would insert the properties
+      "born" and "height", with the values "1950" and "180" respectively.
+    Administrative URI:
+      http://localhost:34568/UpdateEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
+    Authenticated URI:
+      http://localhost:34568/UpdateEntityAuth/TABLE_NAME/AUTHENTICATED_TOKEN/PARTITION_NAME/ROW_NAME
+
+    // TODO: AddPropertyAdmin and AddPropertyAuth have not been implemented yet.
+    Operation:
+      Updates all entities in the given table with the given property,
+      in addition to any existing properties.
+      If the property already exists for a given entity, the value will
+      be replaced.
+    Body:
+      JSON object represented by a string/value pair. The first value of
+      the object is the property name, and the second value of the object
+      is the property value.
+      E.g. {"born":"1950"} would insert the property "born" with the
+      value "1950".
+    Administrative URI:
+      http://localhost:34568/AddPropertyAdmin/TABLE_NAME
+    Authenticated URI:
+      http://localhost:34568/AddPropertyAuth/TABLE_NAME/AUTHENTICATED_TOKEN
+
+    // TODO: UpdatePropertyAdmin and UpdatePropertyAuth have not been
+    // implemented yet.
+    Operation:
+      Updates any entity in the given table which has the given property
+      with the given value.
+      Any entity which does not have the given property will not be changed.
+    Body:
+      JSON object represented by a string/value pair. The first value of
+      the object is the property name, and the second value of the object
+      is the property value.
+      E.g. {"born":"1950"} would change the property named "born" of any entity
+      containing the property named "born" to the value "1950".
+    Administrative URI:
+      http://localhost:34568/UpdatePropertyAdmin/TABLE_NAME
+    Authenticated URI:
+      http://localhost:34568/UpdatePropertyAuth/TABLE_NAME/AUTHENTICATED_TOKEN
  */
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
