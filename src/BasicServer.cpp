@@ -27,6 +27,8 @@
 
 #include "../include/azure_keys.h"
 
+#include "../include/ServerUtils.h"
+
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
 using azure::storage::storage_exception;
@@ -377,10 +379,6 @@ void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** PUT " << path << endl;
 
-  string token {""};
-  string partition {""};
-  string row {""};
-
   auto paths = uri::split_path(path);
   // Need at least an operation, table name, partition, and row
   if (paths.size() < 4) {
@@ -392,20 +390,17 @@ void handle_put(http_request message) {
     return;
   }
   else if(paths[0] == update_entity_auth){
-    partition = paths[3];
-    row = paths[4]; 
+    unordered_map<string,string> json_body {get_json_bourne (message)};
+    message.reply(update_with_token (message, tables_endpoint, json_body));
+    return;
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if (paths[0] == update_entity_admin) {
-    partition = paths[2];
-    row = paths[3]; 
-  }
-  else {
+  else if (paths[0] != update_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
   }
-
+  
   unordered_map<string,string> json_body {get_json_bourne (message)};
 
   cloud_table table {table_cache.lookup_table(paths[1])};
@@ -414,7 +409,7 @@ void handle_put(http_request message) {
     return;
   }
 
-  table_entity entity {partition, row}; // partition and row
+  table_entity entity {paths[2], paths[3]}; // partition and row
 
   // Update entity
   cout << "Update " << entity.partition_key() << " / " << entity.row_key() << endl;
@@ -423,18 +418,8 @@ void handle_put(http_request message) {
     properties[v.first] = entity_property {v.second};
   }
 
-  try {
-    table_operation operation {table_operation::insert_or_merge_entity(entity)};
-    table_result op_result {table.execute(operation)};
-  }
-  catch (const storage_exception& e) {
-    cout << "Azure Table Storage error: " << e.what() << endl;
-    cout << e.result().extended_error().message() << endl;
-    if (e.result().http_status_code() == status_codes::Forbidden)
-      message.reply(status_codes::Forbidden);
-    else
-      message.reply(status_codes::InternalError);
-  }
+  table_operation operation {table_operation::insert_or_merge_entity(entity)};
+  table_result op_result {table.execute(operation)};
 
   message.reply(status_codes::OK);
   return;
