@@ -416,7 +416,16 @@ void handle_get(http_request message) {
 
 /*
   Top-level routine for processing all HTTP POST requests.
- */
+
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation:
+    Creates a table or ensures the table exists.
+  Body:
+    None.
+  URI:
+    http://localhost:34568/CreateTableAdmin/TABLE_NAME
+*/
 void handle_post(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
