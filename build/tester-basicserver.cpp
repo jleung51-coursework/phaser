@@ -892,7 +892,7 @@ public:
   static constexpr const char* prop_val {"RESPECT"};
 
 public:
-  AuthFixture() {
+  AuthFixture() { // creati
     int make_result {create_table(addr, table)};
     cerr << "create result " << make_result << endl;
     if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
