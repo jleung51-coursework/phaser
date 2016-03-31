@@ -1129,5 +1129,89 @@ SUITE(GET_UPDATE_TOKEN){
     passwordbody.clear();
 
   }
+}
+
+SUITE(GET_AUTH){
+  // Test Fixture for Get Auth
+  TEST_FIXTURE(AuthFixture, GetAuth){
+    
+    pair<status_code,value> result;
+
+    cout << "Requesting token" << endl;
+    pair<status_code,string> token_res {
+      get_read_token(AuthFixture::auth_addr,
+                       AuthFixture::userid,
+                       AuthFixture::user_pwd)};
+    cout << "Token response " << token_res.first << endl;
+    CHECK_EQUAL (token_res.first, status_codes::OK);
+
+    //correct test, read authorized successful
+    result = do_request (methods::GET,
+      string(AuthFixture::addr)
+      + read_entity_auth + "/"
+      + AuthFixture::table + "/"
+      + token_res.second + "/"
+      + AuthFixture::partition + "/"
+      + AuthFixture::row
+    );
+    CHECK_EQUAL(status_codes::OK, result.first);
+
+    //less than 4 parameters provided -- no row given
+    result = do_request (methods::GET,
+      string(AuthFixture::addr)
+      + read_entity_auth + "/"
+      + AuthFixture::table + "/"
+      + token_res.second + "/"
+      + AuthFixture::partition + "/"
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    //less than 4 parameters provided -- no ReadEntityAuth
+    result = do_request (methods::GET,
+      string(AuthFixture::addr)
+      + AuthFixture::table + "/"
+      + token_res.second + "/"
+      + AuthFixture::partition + "/"
+      + AuthFixture::row
+    );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+    //table not found
+    result = do_request (methods::GET,
+      string(AuthFixture::addr)
+      + read_entity_auth + "/"
+      + "WrongTableName" + "/"
+      + token_res.second + "/"
+      + AuthFixture::partition + "/"
+      + AuthFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    //no entity with partition name
+    result = do_request (methods::GET,
+      string(AuthFixture::addr)
+      + read_entity_auth + "/"
+      + AuthFixture::table + "/"
+      + token_res.second + "/"
+      + "WrongPartition" + "/"
+      + AuthFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+    //correct test, read authorized successful
+    result = do_request (methods::GET,
+      string(AuthFixture::addr)
+      + read_entity_auth + "/"
+      + AuthFixture::table + "/"
+      + "FakeToken10101011010101" + "/"
+      + AuthFixture::partition + "/"
+      + AuthFixture::row
+    );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+
+
+  }
 
 }
+
+
