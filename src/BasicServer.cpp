@@ -248,12 +248,10 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Body:
       None.
     Administrative URI:
-      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
-      (ROW_NAME can only be "*")
+      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/
     Authenticated URI:
-      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
+      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
-      (ROW_NAME can only be "*")
     // TODO: This does not safely handle a property named "Partition" or "Row".
  */
 void handle_get(http_request message) {
