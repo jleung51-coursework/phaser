@@ -1,6 +1,9 @@
 /*
- Basic Server code for CMPT 276, Spring 2016.
- */
+  Basic Server code for CMPT 276 Group Assignment, Spring 2016.
+
+  This server handles post/put/get/delete requests, which interfaces with
+  a Microsoft Azure database.
+*/
 
 #include <exception>
 #include <iostream>
