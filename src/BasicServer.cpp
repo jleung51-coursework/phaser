@@ -207,6 +207,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
       (ROW_NAME cannot be "*")
+    cURL command:
+      curl -iX get URI
 
     Operation:
       Returns a JSON array of objects containing all entities in the requested
@@ -223,6 +225,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Authenticated URI:
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
+    cURL command:
+      curl -iX get -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "*", "PROPERTY_NAME" : "*"}' URI
 
     Operation:
       Returns a JSON array of objects with all entities in a
@@ -236,6 +240,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
       (row name can only be "*")
+    cURL command:
+      curl -iX get URI
 
     Operation:
       Returns a JSON array of objects with all entities in a
@@ -252,6 +258,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Authenticated URI:
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
+    cURL command:
+      curl -iX get URI
     // TODO: This does not safely handle a property named "Partition" or "Row".
  */
 void handle_get(http_request message) {
@@ -427,6 +435,8 @@ void handle_get(http_request message) {
     None.
   URI:
     http://localhost:34568/CreateTableAdmin/TABLE_NAME
+  cURL command:
+    curl -iX post URI
 */
 void handle_post(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
@@ -487,6 +497,8 @@ void handle_post(http_request message) {
     Authenticated URI:
       http://localhost:34568/UpdateEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
+    cURL command:
+      curl -iX put -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "PROPERTY_VALUE", "PROPERTY_NAME" : "PROPERTY_VALUE"}' URI
 
     // TODO: AddPropertyAdmin has not been implemented yet.
     Operation:
@@ -502,6 +514,8 @@ void handle_post(http_request message) {
       value "1950".
     URI:
       http://localhost:34568/AddPropertyAdmin/TABLE_NAME
+    cURL command:
+      curl -iX put -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "PROPERTY_VALUE", "PROPERTY_NAME" : "PROPERTY_VALUE"}' URI
 
     // TODO: UpdatePropertyAdmin has not been implemented yet.
     Operation:
@@ -516,6 +530,8 @@ void handle_post(http_request message) {
       containing the property named "born" to the value "1950".
     URI:
       http://localhost:34568/UpdatePropertyAdmin/TABLE_NAME
+    cURL command:
+      curl -iX put -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "PROPERTY_VALUE", "PROPERTY_NAME" : "PROPERTY_VALUE"}' URI
  */
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
@@ -584,6 +600,8 @@ void handle_put(http_request message) {
       Deletes a given entity.
     URI:
       http://localhost:34568/DeleteEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
+    cURL command:
+      curl -iX delete URI
     // TODO: Currently returns status code 500 (Internal Error) if the entity
     // does not exist; this should be status code 400 (Bad Request).
 
@@ -591,6 +609,8 @@ void handle_put(http_request message) {
       Deletes a given table.
     URI:
       http://localhost:34568/DeleteTableAdmin/TABLE_NAME
+    cURL command:
+      curl -iX delete URI
     // TODO: Currently returns status code 500 (Internal Error) if the entity
     // does not exist; this should be status code 400 (Bad Request).
  */
