@@ -575,6 +575,26 @@ void handle_put(http_request message) {
 
 /*
   Top-level routine for processing all HTTP DELETE requests.
+
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation names: DeleteEntityAdmin, DeleteTableAdmin
+
+  Possible operations:
+
+    Operation:
+      Deletes a given entity.
+    URI:
+      http://localhost:34568/DeleteEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
+    // TODO: Currently returns status code 500 (Internal Error) if the entity
+    // does not exist; this should be status code 400 (Bad Request).
+
+    Operation:
+      Deletes a given table.
+    URI:
+      http://localhost:34568/DeleteTableAdmin/TABLE_NAME
+    // TODO: Currently returns status code 500 (Internal Error) if the entity
+    // does not exist; this should be status code 400 (Bad Request).
  */
 void handle_delete(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
