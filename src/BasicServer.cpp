@@ -490,7 +490,7 @@ void handle_post(http_request message) {
       http://localhost:34568/UpdateEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
 
-    // TODO: AddPropertyAdmin and AddPropertyAuth have not been implemented yet.
+    // TODO: AddPropertyAdmin has not been implemented yet.
     Operation:
       Updates all entities in the given table with the given property,
       in addition to any existing properties.
@@ -504,12 +504,8 @@ void handle_post(http_request message) {
       value "1950".
     Administrative URI:
       http://localhost:34568/AddPropertyAdmin/TABLE_NAME
-    Authenticated URI:
-      http://localhost:34568/AddPropertyAuth/TABLE_NAME/AUTHENTICATION_TOKEN
-      (AUTHENTICATION_TOKEN is obtained from AuthServer)
 
-    // TODO: UpdatePropertyAdmin and UpdatePropertyAuth have not been
-    // implemented yet.
+    // TODO: UpdatePropertyAdmin has not been implemented yet.
     Operation:
       Updates any entity in the given table which has the given property
       with the given value.
@@ -522,9 +518,6 @@ void handle_post(http_request message) {
       containing the property named "born" to the value "1950".
     Administrative URI:
       http://localhost:34568/UpdatePropertyAdmin/TABLE_NAME
-    Authenticated URI:
-      http://localhost:34568/UpdatePropertyAuth/TABLE_NAME/AUTHENTICATION_TOKEN
-      (AUTHENTICATION_TOKEN is obtained from AuthServer)
  */
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
