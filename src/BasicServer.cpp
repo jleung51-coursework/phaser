@@ -421,6 +421,8 @@ void handle_get(http_request message) {
 
   HTTP URL for this server is defined in this file as http://localhost:34568.
 
+  Operation name: CreateTableAdmin
+
   Operation:
     Creates a table or ensures the table exists.
   Body:
@@ -485,7 +487,8 @@ void handle_post(http_request message) {
     Administrative URI:
       http://localhost:34568/UpdateEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
     Authenticated URI:
-      http://localhost:34568/UpdateEntityAuth/TABLE_NAME/AUTHENTICATED_TOKEN/PARTITION_NAME/ROW_NAME
+      http://localhost:34568/UpdateEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
 
     // TODO: AddPropertyAdmin and AddPropertyAuth have not been implemented yet.
     Operation:
@@ -502,7 +505,8 @@ void handle_post(http_request message) {
     Administrative URI:
       http://localhost:34568/AddPropertyAdmin/TABLE_NAME
     Authenticated URI:
-      http://localhost:34568/AddPropertyAuth/TABLE_NAME/AUTHENTICATED_TOKEN
+      http://localhost:34568/AddPropertyAuth/TABLE_NAME/AUTHENTICATION_TOKEN
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
 
     // TODO: UpdatePropertyAdmin and UpdatePropertyAuth have not been
     // implemented yet.
@@ -519,7 +523,8 @@ void handle_post(http_request message) {
     Administrative URI:
       http://localhost:34568/UpdatePropertyAdmin/TABLE_NAME
     Authenticated URI:
-      http://localhost:34568/UpdatePropertyAuth/TABLE_NAME/AUTHENTICATED_TOKEN
+      http://localhost:34568/UpdatePropertyAuth/TABLE_NAME/AUTHENTICATION_TOKEN
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
  */
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
