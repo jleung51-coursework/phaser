@@ -502,7 +502,7 @@ void handle_post(http_request message) {
       is the property value.
       E.g. {"born":"1950"} would insert the property "born" with the
       value "1950".
-    Administrative URI:
+    URI:
       http://localhost:34568/AddPropertyAdmin/TABLE_NAME
 
     // TODO: UpdatePropertyAdmin has not been implemented yet.
@@ -516,7 +516,7 @@ void handle_post(http_request message) {
       is the property value.
       E.g. {"born":"1950"} would change the property named "born" of any entity
       containing the property named "born" to the value "1950".
-    Administrative URI:
+    URI:
       http://localhost:34568/UpdatePropertyAdmin/TABLE_NAME
  */
 void handle_put(http_request message) {
