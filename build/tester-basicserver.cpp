@@ -41,22 +41,7 @@ using web::http::client::http_client;
 using web::json::object;
 using web::json::value;
 
-const string create_table_op {"CreateTableAdmin"};
-const string delete_table_op {"DeleteTableAdmin"};
-
-const string read_entity_admin {"ReadEntityAdmin"};
-const string update_entity_admin {"UpdateEntityAdmin"};
-const string delete_entity_admin {"DeleteEntityAdmin"};
-
-const string read_entity_auth {"ReadEntityAuth"};
-const string update_entity_auth {"UpdateEntityAuth"};
-
-const string get_read_token_op  {"GetReadToken"};
-const string get_update_token_op {"GetUpdateToken"};
-
-// The two optional operations from Assignment 1
-const string add_property_admin {"AddPropertyAdmin"};
-const string update_property_admin {"UpdatePropertyAdmin"};
+using namespace rest_operations;
 
 /*
   A sample fixture that ensures TestTable exists, and
