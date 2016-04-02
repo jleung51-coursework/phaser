@@ -259,7 +259,7 @@ void handle_get(http_request message) {
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation name and table name
-  if (paths.size() < 2) 
+  if (paths.size() < 2)
   {
     message.reply(status_codes::BadRequest);
     return;
@@ -267,7 +267,7 @@ void handle_get(http_request message) {
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
   //Check for use of admin or auth
-  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth) 
+  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth)
   {
     message.reply(status_codes::BadRequest);
     return;
@@ -469,10 +469,6 @@ void handle_put(http_request message) {
   else if(paths[0] == update_entity_auth){
     unordered_map<string,string> json_body {get_json_bourne (message)};
     message.reply(update_with_token (message, tables_endpoint, json_body));
-    return;
-  }
-  else if(paths[0] == add_property_admin || paths[0] == update_property_admin) {
-    message.reply(status_codes::NotImplemented);
     return;
   }
   else if (paths[0] != update_entity_admin) {
