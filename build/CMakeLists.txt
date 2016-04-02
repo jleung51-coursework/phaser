@@ -37,7 +37,7 @@ add_executable (
 )
 target_link_libraries (basicserver ${REST} ${REST_LIBRARIES} ${STORE})
 
-add_executable (tester tester-basicserver.cpp testmain.cpp)
+add_executable (tester tester-utils.cpp tester-basicserver.cpp testmain.cpp)
 target_link_libraries (tester ${REST} ${REST_LIBRARIES} ${STORE} ${TEST})
 
 add_executable (authserver ../src/AuthServer.cpp ../src/TableCache.cpp ../include/TableCache.h)
