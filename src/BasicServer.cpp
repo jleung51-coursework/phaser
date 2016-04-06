@@ -1,6 +1,9 @@
 /*
- Basic Server code for CMPT 276, Spring 2016.
- */
+  Basic Server code for CMPT 276 Group Assignment, Spring 2016.
+
+  This server handles post/put/get/delete requests, which interfaces with
+  a Microsoft Azure database.
+*/
 
 #include <exception>
 #include <iostream>
@@ -192,7 +195,7 @@ unordered_map<string,string> get_json_bourne(http_request message) {
 
   HTTP URL for this server is defined in this file as http://localhost:34568.
 
-  Operation names: ReadEntityAdmin, ReadEntityAuth (with authentication token)
+  Operation names: ReadEntityAdmin, ReadEntityAuth
 
   Possible operations:
 
@@ -207,13 +210,17 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
       (ROW_NAME cannot be "*")
+    cURL command:
+      curl -iX get URI
 
     Operation:
       Returns a JSON array of objects containing all entities in the requested
       table which have all of the requested properties (regardless of value).
       Each element in the JSON array is a single entity.
     Body:
-      JSON object where the name is the property name and the value is "*".
+      JSON object representing an array where each element is a property
+      represented by a string / JSON value pair. The first value of each element
+      is the property name, and the second value of each element is "*".
       E.g. {"born":"*", "art":"*"} would return all entities in the requested
       table which have properties "born" and "art".
     Administrative URI:
@@ -221,6 +228,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Authenticated URI:
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
+    cURL command:
+      curl -iX get -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "*", "PROPERTY_NAME" : "*"}' URI
 
     Operation:
       Returns a JSON array of objects with all entities in a
@@ -234,6 +243,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
       (row name can only be "*")
+    cURL command:
+      curl -iX get URI
 
     Operation:
       Returns a JSON array of objects with all entities in a
@@ -246,12 +257,12 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Body:
       None.
     Administrative URI:
-      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
-      (ROW_NAME can only be "*")
+      http://localhost:34568/ReadEntityAdmin/TABLE_NAME/
     Authenticated URI:
-      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
+      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
       (AUTHENTICATION_TOKEN is obtained from AuthServer)
-      (ROW_NAME can only be "*")
+    cURL command:
+      curl -iX get URI
     // TODO: This does not safely handle a property named "Partition" or "Row".
  */
 void handle_get(http_request message) {
@@ -259,7 +270,7 @@ void handle_get(http_request message) {
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation name and table name
-  if (paths.size() < 2) 
+  if (paths.size() < 2)
   {
     message.reply(status_codes::BadRequest);
     return;
@@ -267,7 +278,7 @@ void handle_get(http_request message) {
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
   //Check for use of admin or auth
-  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth) 
+  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth)
   {
     message.reply(status_codes::BadRequest);
     return;
@@ -416,7 +427,20 @@ void handle_get(http_request message) {
 
 /*
   Top-level routine for processing all HTTP POST requests.
- */
+
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation name: CreateTableAdmin
+
+  Operation:
+    Creates a table or ensures the table exists.
+  Body:
+    None.
+  URI:
+    http://localhost:34568/CreateTableAdmin/TABLE_NAME
+  cURL command:
+    curl -iX post URI
+*/
 void handle_post(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
@@ -449,6 +473,68 @@ void handle_post(http_request message) {
 
 /*
   Top-level routine for processing all HTTP PUT requests.
+
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation names:
+    UpdateEntityAdmin, UpdateEntityAuth
+    AddPropertyAdmin
+    UpdatePropertyAdmin
+
+  Possible operations:
+
+    Operation:
+      Updates an entity with the given property(ies), in addition to any
+      existing properties.
+      If the property already exists for a given entity, the value will
+      be replaced.
+    Body:
+      JSON object representing an array where each element is a property
+      represented by a string/value pair. The first value of each element
+      is the property name, and the second value of each element is the
+      property value.
+      E.g. {"born":"1950", "height":"180"} would insert the properties
+      "born" and "height", with the values "1950" and "180" respectively.
+    Administrative URI:
+      http://localhost:34568/UpdateEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
+    Authenticated URI:
+      http://localhost:34568/UpdateEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/ROW_NAME
+      (AUTHENTICATION_TOKEN is obtained from AuthServer)
+    cURL command:
+      curl -iX put -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "PROPERTY_VALUE", "PROPERTY_NAME" : "PROPERTY_VALUE"}' URI
+
+    // TODO: AddPropertyAdmin has not been implemented yet.
+    Operation:
+      Updates all entities in the given table with the given property,
+      in addition to any existing properties.
+      If the property already exists for a given entity, the value will
+      be replaced.
+    Body:
+      JSON object represented by a string/value pair. The first value of
+      the object is the property name, and the second value of the object
+      is the property value.
+      E.g. {"born":"1950"} would insert the property "born" with the
+      value "1950".
+    URI:
+      http://localhost:34568/AddPropertyAdmin/TABLE_NAME
+    cURL command:
+      curl -iX put -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "PROPERTY_VALUE", "PROPERTY_NAME" : "PROPERTY_VALUE"}' URI
+
+    // TODO: UpdatePropertyAdmin has not been implemented yet.
+    Operation:
+      Updates any entity in the given table which has the given property
+      with the given value.
+      Any entity which does not have the given property will not be changed.
+    Body:
+      JSON object represented by a string/value pair. The first value of
+      the object is the property name, and the second value of the object
+      is the property value.
+      E.g. {"born":"1950"} would change the property named "born" of any entity
+      containing the property named "born" to the value "1950".
+    URI:
+      http://localhost:34568/UpdatePropertyAdmin/TABLE_NAME
+    cURL command:
+      curl -iX put -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "PROPERTY_VALUE", "PROPERTY_NAME" : "PROPERTY_VALUE"}' URI
  */
 void handle_put(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
@@ -506,6 +592,30 @@ void handle_put(http_request message) {
 
 /*
   Top-level routine for processing all HTTP DELETE requests.
+
+  HTTP URL for this server is defined in this file as http://localhost:34568.
+
+  Operation names: DeleteEntityAdmin, DeleteTableAdmin
+
+  Possible operations:
+
+    Operation:
+      Deletes a given entity.
+    URI:
+      http://localhost:34568/DeleteEntityAdmin/TABLE_NAME/PARTITION_NAME/ROW_NAME
+    cURL command:
+      curl -iX delete URI
+    // TODO: Currently returns status code 500 (Internal Error) if the entity
+    // does not exist; this should be status code 400 (Bad Request).
+
+    Operation:
+      Deletes a given table.
+    URI:
+      http://localhost:34568/DeleteTableAdmin/TABLE_NAME
+    cURL command:
+      curl -iX delete URI
+    // TODO: Currently returns status code 500 (Internal Error) if the entity
+    // does not exist; this should be status code 400 (Bad Request).
  */
 void handle_delete(http_request message) {
   string path {uri::decode(message.relative_uri().path())};
