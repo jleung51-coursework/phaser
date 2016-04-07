@@ -373,6 +373,7 @@ void handle_get(http_request message) {
     request = parse_get_request_paths(message);
   }
   catch( const std::exception& e ) {
+    cout << e.what();
     message.reply(status_codes::InternalError);
     return;
   }
