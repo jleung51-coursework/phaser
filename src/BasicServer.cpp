@@ -72,7 +72,7 @@ using prop_vals_t = vector<pair<string,value>>;
   Convert properties represented in Azure Storage type
   to prop_vals_t type.
  */
-prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values);
+ prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values = prop_vals_t {});
 
 /*
   Return true if an HTTP request has a JSON body
@@ -244,7 +244,7 @@ vector<value> get_partition(get_request_t request) {
   Convert properties represented in Azure Storage type
   to prop_vals_t type.
  */
-prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values = prop_vals_t {}) {
+prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values) {
   for (const auto v : properties) {
     if (v.second.property_type() == edm_type::string) {
       values.push_back(make_pair(v.first, value::string(v.second.string_value())));
