@@ -59,6 +59,7 @@ using std::vector;
 using web::http::http_headers;
 using web::http::http_request;
 using web::http::methods;
+using web::http::status_code;
 using web::http::status_codes;
 using web::http::uri;
 
@@ -72,7 +73,7 @@ using prop_vals_t = vector<pair<string,value>>;
   Convert properties represented in Azure Storage type
   to prop_vals_t type.
  */
- prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values = prop_vals_t {});
+prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values = prop_vals_t {});
 
 /*
   Return true if an HTTP request has a JSON body
@@ -236,6 +237,88 @@ vector<value> get_partition(get_request_t request) {
   }
 
   return entity_vec;
+}
+
+/*
+  This local function returns all properties of a requested entity.
+  Any error when authenticating with the token will return a status code
+  other than status_codes::OK.
+
+  An exception is thrown if:
+    The operation is incorrect or nonexistent (invalid_argument)
+    The table name is incorrect or nonexistent (invalid_argument)
+    The partition name is nonexistent (invalid_argument)
+    The row name is nonexistent (invalid_argument)
+    The row name is "*" (logic_error)
+    The operation is ReadEntityAuth but the token is nonexistent (logic_error)
+ */
+pair<status_code, prop_vals_t> get_specific(http_request message,
+                                            get_request_t request) {
+  if (request.operation != read_entity_admin &&
+      request.operation != read_entity_auth) {
+    throw std::invalid_argument ("Error: get_specific() was given an "\
+      "invalid operation.\n");
+  }
+
+  // Check for specified table
+  cloud_table table {table_cache.lookup_table(request.table)};
+  if ( !table.exists() ) {
+    throw std::invalid_argument ("Error: get_specific() was given an "\
+      "invalid table name.\n");
+  }
+
+  if (request.partition == "") {
+    throw std::invalid_argument ("Error: get_specific was not given a "\
+      "partition name.\n");
+  }
+  else if (request.row == "") {
+    throw std::invalid_argument ("Error: get_specific was not given a "\
+      "row name.\n");
+  }
+  else if (request.row == "*") {
+    throw std::invalid_argument ("Error: get_specific() was given the "\
+      "row name \"*\", which should be for get_partition().\n");
+  }
+  else if (request.operation == read_entity_auth && request.token == "") {
+    throw std::invalid_argument ("Error: get_specific() was given the "\
+      "operation ReadEntityAuth, but was not given a token.\n");
+  }
+
+  table_operation retrieve_operation {
+    table_operation::retrieve_entity(
+      request.partition,
+      request.row
+    )
+  };
+
+  table_result retrieve_result;
+  if (request.operation == read_entity_auth)
+  {
+  	// Retrieve entity using token method
+  	pair<web::http::status_code, table_entity> result_pair =
+      read_with_token(message, tables_endpoint);
+  	// Convert into results type
+  	retrieve_result.set_http_status_code(result_pair.first);
+  	retrieve_result.set_entity(result_pair.second);
+  }
+  else if(request.operation == read_entity_admin)
+  {
+  	retrieve_result = table.execute(retrieve_operation);
+  }
+
+  //Check status codes
+  cout << "HTTP code: " << retrieve_result.http_status_code() << endl;
+  if (retrieve_result.http_status_code() == status_codes::NotFound) {
+    prop_vals_t empty_prop;
+    return make_pair(status_codes::NotFound, empty_prop);
+  }
+  //Place entity and parse properties
+  table_entity entity {retrieve_result.entity()};
+  table_entity::properties_type properties {entity.properties()};
+
+  // If the entity has any properties, return them as JSON
+  prop_vals_t values (get_properties(properties));
+  return make_pair(status_codes::OK, values);
 }
 
 }  // Unnamed namespace for local functions and structures
