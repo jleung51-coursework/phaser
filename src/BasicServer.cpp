@@ -175,7 +175,7 @@ get_request_t parse_get_request_paths(http_request message) {
     req.table = paths[1];
   }
   else {
-    throw std::invalid_argument("Error: parse_get_request_paths() was given "\
+    throw std::invalid_argument ("Error: parse_get_request_paths() was given "\
       "an incorrectly-formed request.\n");
   }
 
@@ -192,7 +192,7 @@ get_request_t parse_get_request_paths(http_request message) {
     The row name is not "*" (logic_error)
  */
 vector<value> get_partition(get_request_t request) {
-  if(request.operation != read_entity_admin) {
+  if (request.operation != read_entity_admin) {
     throw std::invalid_argument ("Error: get_partition() was given an "\
       "invalid operation.\n");
   }
@@ -205,8 +205,8 @@ vector<value> get_partition(get_request_t request) {
   }
 
   // Placed here for logical order - operation, table, row
-  if(request.row != "*") {
-    throw std::invalid_argument ("Error: get_partition() was given an "\
+  if (request.row != "*") {
+    throw std::logic_error ("Error: get_partition() was given an "\
       "invalid row name (which should be \"*\").\n");
   }
 
@@ -276,11 +276,11 @@ pair<status_code, prop_vals_t> get_specific(http_request message,
       "row name.\n");
   }
   else if (request.row == "*") {
-    throw std::invalid_argument ("Error: get_specific() was given the "\
+    throw std::logic_error ("Error: get_specific() was given the "\
       "row name \"*\", which should be for get_partition().\n");
   }
   else if (request.operation == read_entity_auth && request.token == "") {
-    throw std::invalid_argument ("Error: get_specific() was given the "\
+    throw std::logic_error ("Error: get_specific() was given the "\
       "operation ReadEntityAuth, but was not given a token.\n");
   }
 
