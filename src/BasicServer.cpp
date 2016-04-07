@@ -181,6 +181,62 @@ get_request_t parse_get_request_paths(http_request message) {
   return req;
 }
 
+/*
+  This local function returns a vector of JSON objects with all entities in a
+  requested partition. Each element is a single entity.
+
+  An exception is thrown if:
+    The operation is incorrect or nonexistent (invalid_argument)
+    The table name is incorrect or nonexistent (invalid_argument)
+    The row name is not "*" (logic_error)
+ */
+vector<value> get_partition(get_request_t request) {
+  if(request.operation != read_entity_admin) {
+    throw std::invalid_argument ("Error: get_partition() was given an "\
+      "invalid operation.\n");
+  }
+
+  // Check for specified table
+  cloud_table table {table_cache.lookup_table(request.table)};
+  if ( !table.exists() ) {
+    throw std::invalid_argument ("Error: get_partition() was given an "\
+      "invalid table name.\n");
+  }
+
+  // Placed here for logical order - operation, table, row
+  if(request.row != "*") {
+    throw std::invalid_argument ("Error: get_partition() was given an "\
+      "invalid row name (which should be \"*\").\n");
+  }
+
+  // Create Query
+  table_query query {};
+  table_query_iterator end;
+  query.set_filter_string(
+    azure::storage::table_query::generate_filter_condition(
+      "PartitionKey",
+      azure::storage::query_comparison_operator::equal,
+      request.partition
+    )
+  );
+  table_query_iterator it = table.execute_query(query);
+
+  // Parse into vector
+  vector<value> entity_vec;
+  while (it != end) {
+    cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+
+    prop_vals_t entity {
+      make_pair( "Partition", value::string(it->partition_key()) ),
+      make_pair( "Row", value::string(it->row_key()) )
+    };
+    entity = get_properties(it->properties(), entity);
+    entity_vec.push_back(value::object(entity));
+    ++it;
+  }
+
+  return entity_vec;
+}
 
 }  // Unnamed namespace for local functions and structures
 
@@ -462,25 +518,17 @@ void handle_get(http_request message) {
   // User has indicated they want all items in this partition by the `*`
   if (request.paths_count == 4 && request.row == "*")
   {
-    // Create Query
-    table_query query {};
-    table_query_iterator end;
-    query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, request.row));
-    // Execute Query
-    table_query_iterator it = table.execute_query(query);
-    // Parse into vector
-    vector<value> key_vec;
-    while (it != end) {
-      cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
-      prop_vals_t keys {
-  make_pair("Partition",value::string(it->partition_key())),
-  make_pair("Row", value::string(it->row_key()))};
-      keys = get_properties(it->properties(), keys);
-      key_vec.push_back(value::object(keys));
-      ++it;
+    vector<value> entities;
+    try {
+      entities = get_partition(request);
     }
-    // message reply
-    message.reply(status_codes::OK, value::array(key_vec));
+    catch (const std::exception& e) {
+      cout << e.what();
+      message.reply(status_codes::InternalError);
+      return;
+    }
+
+    message.reply(status_codes::OK, value::array(entities));
     return;
   }
 
