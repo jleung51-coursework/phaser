@@ -68,7 +68,20 @@ using web::http::experimental::listener::http_listener;
 
 using prop_vals_t = vector<pair<string,value>>;
 
+// Unnamed namespace for local functions and structures
+namespace {
+
+struct get_request_t {
+  string operation {};
+  string token {};
+  string table {};
+  string partition {};
+  string row {};
+  unsigned int paths_count {};
+};
+
 constexpr const char* def_url = "http://localhost:34568";
+
 //Unauthorized Options
 const string create_table {"CreateTable"};
 const string delete_table {"DeleteTable"};
@@ -93,22 +106,8 @@ const string get_update_token_op {"GetUpdateToken"};
 const string add_property_admin {"AddPropertyAdmin"};
 const string update_property_admin {"UpdatePropertyAdmin"};
 
-/*
-  Cache of opened tables
- */
+// Cache of opened tables
 TableCache table_cache {};
-
-// Unnamed namespace for local functions and structures
-namespace {
-
-struct get_request_t {
-  string operation {};
-  string token {};
-  string table {};
-  string partition {};
-  string row {};
-  unsigned int paths_count {};
-};
 
 /*
   This local function returns the contents of the GET request in a
