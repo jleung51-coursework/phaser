@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <stdexcept>
 #include <string>
 
 #include <cpprest/base_uri.h>
@@ -96,6 +97,62 @@ const string update_property_admin {"UpdatePropertyAdmin"};
   Cache of opened tables
  */
 TableCache table_cache {};
+
+// Unnamed namespace for local functions and structures
+namespace {
+
+struct get_request_t {
+  string operation {};
+  string token {};
+  string table {};
+  string partition {};
+  string row {};
+  unsigned int paths_count {};
+};
+
+/*
+  This local function returns the contents of the GET request in a
+  get_request_t variable.
+  The returned request parameters are not guaranteed to be valid for the table.
+
+  An exception will be thrown if:
+    The request is incorrectly formed (see documentation for handle_get)
+      (invalid_argument)
+ */
+get_request_t ParseGetRequestPaths(http_request message) {
+  string path { uri::decode(message.relative_uri().path()) };
+  auto paths = uri::split_path(path);
+
+  get_request_t req;
+  req.paths_count = paths.size();
+
+  if(req.paths_count == 5) {
+    req.operation = paths[0];
+    req.table = paths[1];
+    req.token = paths[2];
+    req.partition = paths[3];
+    req.row = paths[4];
+  }
+  else if(req.paths_count == 4) {
+    req.operation = paths[0];
+    req.table = paths[1];
+    req.partition = paths[2];
+    req.row = paths[3];
+  }
+  else if(req.paths_count == 2 ) {
+    req.operation = paths[0];
+    req.table = paths[1];
+  }
+  else {
+    throw std::invalid_argument("Error: ParseGetRequestPaths() was given "\
+      "an incorrectly-formed request.\n");
+  }
+
+  return req;
+}
+
+
+}  // Unnamed namespace for local functions and structures
 
 /*
   Convert properties represented in Azure Storage type
@@ -259,7 +316,7 @@ void handle_get(http_request message) {
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation name and table name
-  if (paths.size() < 2) 
+  if (paths.size() < 2)
   {
     message.reply(status_codes::BadRequest);
     return;
@@ -267,20 +324,37 @@ void handle_get(http_request message) {
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
   //Check for use of admin or auth
-  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth) 
+  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth)
   {
     message.reply(status_codes::BadRequest);
     return;
   }
+  // Checking for well-formed request before passing to ParseGetRequestPaths
+  else if (paths.size() != 2 &&
+           paths.size() != 4 &&
+           paths.size() != 5) {
+    message.reply(status_codes::BadRequest);
+    return;
+ }
+
+  get_request_t request;
+  try {
+    request = ParseGetRequestPaths(message);
+  }
+  catch( const std::exception& e ) {
+    message.reply(status_codes::InternalError);
+    return;
+  }
+
   // Check for specified table
-  cloud_table table {table_cache.lookup_table(paths[1])};
+  cloud_table table {table_cache.lookup_table(request.table)};
   if ( ! table.exists()) {
     message.reply(status_codes::NotFound);
     return;
   }
 
   // GET all from table or with specific properties
-  if (paths.size() == 2) {
+  if (request.paths_count == 2) {
   	unordered_map<string,string> json_body = get_json_body (message);
     for(const auto v : json_body){
       if(v.second != "*"){
@@ -342,9 +416,10 @@ void handle_get(http_request message) {
     return;
   }
 
+  // TODO: Outdated documentation
   // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
   // Checking for malformed request
-  if (paths.size() == 3 || paths[2] == "")
+  if (request.paths_count == 3)
   {
     //Path includes table and partition but no row
     //Or table and row but no partition
@@ -353,12 +428,12 @@ void handle_get(http_request message) {
     return;
   }
   // User has indicated they want all items in this partition by the `*`
-  if (paths.size() == 4 && paths[3] == "*")
+  if (request.paths_count == 4 && request.row == "*")
   {
     // Create Query
     table_query query {};
     table_query_iterator end;
-    query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, paths[2]));
+    query.set_filter_string(azure::storage::table_query::generate_filter_condition("PartitionKey", azure::storage::query_comparison_operator::equal, request.row));
     // Execute Query
     table_query_iterator it = table.execute_query(query);
     // Parse into vector
@@ -377,12 +452,13 @@ void handle_get(http_request message) {
     return;
   }
 
+  // TODO: Outdated documentation
   // GET specific entry: Partition == paths[1], Row == paths[2]
   //Setting up for operation
-  table_operation retrieve_operation {table_operation::retrieve_entity(paths[2], paths[3])};
+  table_operation retrieve_operation {table_operation::retrieve_entity(request.partition, request.row)};
   table_result retrieve_result;
   // Check if using auth
-  if (paths[0] == read_entity_auth)
+  if (request.operation == read_entity_auth)
   {
   	// Retrieve entity using token method
   	pair<web::http::status_code,table_entity> result_pair = read_with_token(message, tables_endpoint);
@@ -391,7 +467,7 @@ void handle_get(http_request message) {
   	retrieve_result.set_entity(result_pair.second);
   }
   // Using Admin
-  else if(paths[0] == read_entity_admin)
+  else if(request.operation == read_entity_admin)
   {
   	// Retrieve item as usual
   	retrieve_result = table.execute(retrieve_operation);
