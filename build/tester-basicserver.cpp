@@ -51,6 +51,7 @@ const string update_entity_auth {"UpdateEntityAuth"};
 
 const string get_read_token_op  {"GetReadToken"};
 const string get_update_token_op {"GetUpdateToken"};
+const string get_update_data_op {"GetUpdateData"};
 
 // The two optional operations from Assignment 1
 const string add_property_admin {"AddPropertyAdmin"};
@@ -1129,6 +1130,27 @@ SUITE(GET_UPDATE_TOKEN){
     passwordbody.clear();
 
   }
+}
+
+SUITE(GET_UPDATE_DATA){
+  TEST_FIXTURE(AuthFixture, GetUpdateData){
+    pair<status_code, value> result;
+    vector<pair<string,value>> passwordbody;
+
+    //correct everything
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    passwordbody.clear();
+
+  }
+
+
 }
 
 SUITE(GET_AUTH){

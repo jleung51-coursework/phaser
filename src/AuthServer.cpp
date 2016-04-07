@@ -67,6 +67,7 @@ const string data_table_name {"DataTable"};
 
 const string get_read_token_op {"GetReadToken"};
 const string get_update_token_op {"GetUpdateToken"};
+const string get_update_data_op {"GetUpdateData"};
 
 /*
   Cache of opened tables
@@ -225,7 +226,7 @@ void handle_get(http_request message) {
   }
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  else if(paths[0] != get_read_token_op && paths[0] != get_update_token_op) {
+  else if(paths[0] != get_read_token_op && paths[0] != get_update_token_op && paths[0] != get_update_data_op ) {
     message.reply(status_codes::BadRequest);
     return;
   }
@@ -328,7 +329,7 @@ void handle_get(http_request message) {
 
   // get a read or read|update token
   pair<status_code, string> result;
-  if(paths[0] == get_read_token_op) {
+  if(paths[0] == get_read_token_op ) {
   result = do_get_token
   (
     table,
@@ -349,15 +350,34 @@ void handle_get(http_request message) {
 
   if(result.first == status_codes::OK) {
     vector<pair<string, value>> json_token;
-    json_token.push_back( make_pair("token", value::string(result.second)) );
+    if ( paths[0] == get_update_token_op || paths[0] == get_read_token_op ){
+      json_token.push_back( make_pair("token", value::string(result.second)));
+    }
+    if ( paths[0] == get_update_data_op ){
+      json_token.push_back( make_pair("token", value::string(result.second)) );
+      json_token.push_back( make_pair("DataPartition", value::string(authenticated_partition)) );
+      json_token.push_back( make_pair("DataRow", value::string(authenticated_row)) );
+
+      cout << "Partition " << value::string(authenticated_partition) << endl;
+      cout << "Row " << value::string(authenticated_row) << endl;
+    }
+
+
     message.reply(result.first, value::object(json_token));
     return;
   }
+  
+
   else {
     message.reply(result.first);
     return;
   }
 }
+/*
+void get_update_data_print(string partition, string row){
+  cout << "Partition" << partition << endl;
+  cout << "Row" << row << endl;
+}*/
 
 /*
   Top-level routine for processing all HTTP POST requests.
