@@ -115,10 +115,10 @@ TableCache table_cache {};
   The returned request parameters are not guaranteed to be valid for the table.
 
   An exception will be thrown if:
-    The request is incorrectly formed (see documentation for handle_get)
-      (invalid_argument)
+    The request is incorrectly formed in terms of the number of paths
+      (see documentation for handle_get) (invalid_argument)
  */
-get_request_t ParseGetRequestPaths(http_request message) {
+get_request_t parse_get_request_paths(http_request message) {
   string path { uri::decode(message.relative_uri().path()) };
   auto paths = uri::split_path(path);
 
@@ -138,12 +138,12 @@ get_request_t ParseGetRequestPaths(http_request message) {
     req.partition = paths[2];
     req.row = paths[3];
   }
-  else if(req.paths_count == 2 ) {
+  else if(req.paths_count == 2) {
     req.operation = paths[0];
     req.table = paths[1];
   }
   else {
-    throw std::invalid_argument("Error: ParseGetRequestPaths() was given "\
+    throw std::invalid_argument("Error: parse_get_request_paths() was given "\
       "an incorrectly-formed request.\n");
   }
 
@@ -328,7 +328,8 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  // Checking for well-formed request before passing to ParseGetRequestPaths
+  // Checking for well-formed request before passing to
+  // parse_get_request_paths()
   else if (paths.size() != 2 &&
            paths.size() != 4 &&
            paths.size() != 5) {
@@ -338,7 +339,7 @@ void handle_get(http_request message) {
 
   get_request_t request;
   try {
-    request = ParseGetRequestPaths(message);
+    request = parse_get_request_paths(message);
   }
   catch( const std::exception& e ) {
     message.reply(status_codes::InternalError);
