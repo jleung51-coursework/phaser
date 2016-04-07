@@ -68,6 +68,37 @@ using web::http::experimental::listener::http_listener;
 
 using prop_vals_t = vector<pair<string,value>>;
 
+/*
+  Convert properties represented in Azure Storage type
+  to prop_vals_t type.
+ */
+prop_vals_t get_properties (const table_entity::properties_type& properties, prop_vals_t values);
+
+/*
+  Return true if an HTTP request has a JSON body
+
+  This routine can be called multiple times on the same message.
+ */
+bool has_json_body (http_request message);
+
+/*
+  Given an HTTP message with a JSON body, return the JSON
+  body as an unordered map of strings to strings.
+  get_json_body and get_json_bourne are valid and identical function calls.
+
+  If the message has no JSON body, return an empty map.
+
+  THIS ROUTINE CAN ONLY BE CALLED ONCE FOR A GIVEN MESSAGE
+  (see http://microsoft.github.io/cpprestsdk/classweb_1_1http_1_1http__request.html#ae6c3d7532fe943de75dcc0445456cbc7
+  for source of this limit).
+
+  Note that all types of JSON values are returned as strings.
+  Use C++ conversion utilities to convert to numbers or dates
+  as necessary.
+ */
+unordered_map<string,string> get_json_body(http_request message);
+unordered_map<string,string> get_json_bourne(http_request message);
+
 // Unnamed namespace for local functions and structures
 namespace {
 
