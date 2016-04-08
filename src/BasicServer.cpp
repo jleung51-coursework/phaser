@@ -578,10 +578,6 @@ void handle_put(http_request message) {
     message.reply(update_with_token_response);
     return;
   }
-  else if(paths[0] == add_property_admin || paths[0] == update_property_admin) {
-    message.reply(status_codes::NotImplemented);
-    return;
-  }
   else if (paths[0] != update_entity_admin) {
     message.reply(status_codes::BadRequest);
     return;
