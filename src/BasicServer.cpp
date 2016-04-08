@@ -638,16 +638,16 @@ void handle_get(http_request message) {
     return;
   }
 
-  // GET all from table or with specific properties
+  // Get all entities in the table, or
+  // Get all entities in the table with specific properties
   if (request.paths_count == 2) {
-  	unordered_map<string,string> json_body = get_json_body (message);
+    unordered_map<string,string> json_body = get_json_body (message);
     for(const auto v : json_body){
       if(v.second != "*"){
         message.reply(status_codes::BadRequest);
         return;
       }
     }
-
     vector<value> v;
     try {
       v = get_table_or_properties(request, json_body);
@@ -657,13 +657,12 @@ void handle_get(http_request message) {
       message.reply(status_codes::InternalError);
       return;
     }
-
     message.reply(status_codes::OK, value::array(v));
     return;
   }
 
-  // User has indicated they want all items in this partition by the `*`
-  if (request.paths_count == 4 && request.row == "*")
+  // Get all entities in the partition
+  else if (request.paths_count == 4 && request.row == "*")
   {
     vector<value> entities;
     try {
@@ -678,6 +677,7 @@ void handle_get(http_request message) {
     message.reply(status_codes::OK, value::array(entities));
     return;
   }
+
   // Get a specific entity (administrative or authorized)
   else if( (request.paths_count == 4 &&
             request.operation == read_entity_admin) ||
@@ -707,6 +707,8 @@ void handle_get(http_request message) {
       return;
     }
   }
+
+  // Invalid/badly-formed request was not caught earlier
   else {
     message.reply(status_codes::InternalError);
     return;
