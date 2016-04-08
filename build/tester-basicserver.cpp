@@ -914,21 +914,6 @@ SUITE(UPDATE_AUTH) {
     cout << "Token response " << token_res.first << endl;
     CHECK_EQUAL (token_res.first, status_codes::OK);
 
-// address was not found
-    pair<status_code,value> result {
-      do_request (methods::PUT,
-                  "NonexistentAddr"
-                  + update_entity_auth + "/"
-                  + AuthFixture::table + "/"
-                  + token_res.second + "/"
-                  + AuthFixture::partition + "/"
-                  + AuthFixture::row,
-                  value::object (vector<pair<string,value>>
-                                   {make_pair(added_prop.first,
-                                              value::string(added_prop.second))})
-                  )};
-    CHECK_EQUAL(status_codes::NotFound, result.first);
-
 // Weird command
     result = do_request (methods::PUT,
                   string(AuthFixture::addr)
