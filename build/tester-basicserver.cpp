@@ -1134,7 +1134,7 @@ SUITE(GET_UPDATE_TOKEN){
 SUITE(GET_AUTH){
   // Test Fixture for Get Auth
   TEST_FIXTURE(AuthFixture, GetAuth){
-    
+
     pair<status_code,value> result;
 
     cout << "Requesting token" << endl;
@@ -1213,5 +1213,3 @@ SUITE(GET_AUTH){
   }
 
 }
-
-

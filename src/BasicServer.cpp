@@ -593,22 +593,33 @@ void handle_get(http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
+
+  // Checking for well-formed request before passing to
+  // parse_get_request_paths()
   // [0] refers to the operation name
   // Evaluated after size() to ensure legitimate access
-  //Check for use of admin or auth
-  else if (paths[0] != read_entity_admin && paths[0] != read_entity_auth)
-  {
+  if (paths[0] == read_entity_admin) {
+
+    if(paths.size() != 2 &&
+       paths.size() != 4) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+  }
+
+  else if (paths[0] == read_entity_auth) {
+
+    if(paths.size() != 5) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+  }
+
+  // Incorrect operation name
+  else {
     message.reply(status_codes::BadRequest);
     return;
   }
-  // Checking for well-formed request before passing to
-  // parse_get_request_paths()
-  else if (paths.size() != 2 &&
-           paths.size() != 4 &&
-           paths.size() != 5) {
-    message.reply(status_codes::BadRequest);
-    return;
- }
 
   get_request_t request;
   try {
