@@ -147,6 +147,7 @@ TableCache table_cache {};
   The returned request parameters are not guaranteed to be valid for the table.
 
   An exception will be thrown if:
+    The operation name is invalid (invalid_argument)
     The request is incorrectly formed in terms of the number of paths
       (see documentation for handle_get) (invalid_argument)
  */
@@ -157,26 +158,43 @@ get_request_t parse_get_request_paths(http_request message) {
   get_request_t req;
   req.paths_count = paths.size();
 
-  if(req.paths_count == 5) {
-    req.operation = paths[0];
-    req.table = paths[1];
-    req.token = paths[2];
-    req.partition = paths[3];
-    req.row = paths[4];
+  if(req.paths_count < 1) {
+    throw std::invalid_argument ("Error: parse_get_request_paths() was "\
+      "given an incorrectly-formed request.\n");
   }
-  else if(req.paths_count == 4) {
-    req.operation = paths[0];
-    req.table = paths[1];
-    req.partition = paths[2];
-    req.row = paths[3];
+  req.operation = paths[0];
+
+  if(req.operation == read_entity_admin) {
+    switch(req.paths_count) {
+      case 2:
+        req.table = paths[1];
+        break;
+      case 4:
+        req.table = paths[1];
+        req.partition = paths[2];
+        req.row = paths[3];
+        break;
+      default:
+        throw std::invalid_argument ("Error: parse_get_request_paths() was "\
+          "given an incorrectly-formed request.\n");
+    }
   }
-  else if(req.paths_count == 2) {
-    req.operation = paths[0];
-    req.table = paths[1];
+  else if(req.operation == read_entity_auth) {
+    switch(req.paths_count) {
+      case 5:
+        req.table = paths[1];
+        req.token = paths[2];
+        req.partition = paths[3];
+        req.row = paths[4];
+        break;
+      default:
+        throw std::invalid_argument ("Error: parse_get_request_paths() was "\
+          "given an incorrectly-formed request.\n");
+    }
   }
   else {
     throw std::invalid_argument ("Error: parse_get_request_paths() was given "\
-      "an incorrectly-formed request.\n");
+      "an invalid operation.\n");
   }
 
   return req;
