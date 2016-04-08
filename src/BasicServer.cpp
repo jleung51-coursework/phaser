@@ -636,57 +636,18 @@ void handle_get(http_request message) {
         return;
       }
     }
-    //Get all with specific properties
-    if(json_body.size() > 0){
-      // creating vector for all properties to loop through later
-      table_query query {};
-      table_query_iterator end;
-      table_query_iterator it = table.execute_query(query);
-      vector<value> key_vec;
-      while (it != end) {
-        cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
-        prop_vals_t keys {
-          make_pair("Partition",value::string(it->partition_key())),
-          make_pair("Row", value::string(it->row_key()))};
-        keys = get_properties(it->properties(), keys);
 
-        bool found_all_properties = true;
-        for(const auto desired_property : json_body) {
-          bool found = false;
-          for(const auto property : keys) {
-            if(desired_property.first == property.first) {
-              found = true;
-            }
-          }
-          if(!found) {
-            found_all_properties = false;
-          }
-        }
+    vector<value> v;
+    try {
+      v = get_table_or_properties(request, json_body);
+    }
+    catch(const std::exception& e) {
+      cout << e.what();
+      message.reply(status_codes::InternalError);
+      return;
+    }
 
-        if(found_all_properties) {
-          key_vec.push_back(value::object(keys));
-        }
-        ++it;
-      }
-      message.reply(status_codes::OK, value::array(key_vec));
-    }
-    //Get all from table
-    else{
-      table_query query {};
-      table_query_iterator end;
-      table_query_iterator it = table.execute_query(query);
-      vector<value> key_vec;
-      while (it != end) {
-        cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
-        prop_vals_t keys {
-    make_pair("Partition",value::string(it->partition_key())),
-    make_pair("Row", value::string(it->row_key()))};
-        keys = get_properties(it->properties(), keys);
-        key_vec.push_back(value::object(keys));
-        ++it;
-      }
-      message.reply(status_codes::OK, value::array(key_vec));
-    }
+    message.reply(status_codes::OK, value::array(v));
     return;
   }
 
