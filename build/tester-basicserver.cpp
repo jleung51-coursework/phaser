@@ -915,7 +915,8 @@ SUITE(UPDATE_AUTH) {
     CHECK_EQUAL (token_res.first, status_codes::OK);
 
 // Weird command
-    result = do_request (methods::PUT,
+    pair<status_code,value> result {
+     do_request (methods::PUT,
                   string(AuthFixture::addr)
                   + "DoAnything" + "/"
                   + AuthFixture::table + "/"
@@ -925,7 +926,7 @@ SUITE(UPDATE_AUTH) {
                   value::object (vector<pair<string,value>>
                                    {make_pair(added_prop.first,
                                               value::string(added_prop.second))})
-                  );
+                  )};
     CHECK_EQUAL(status_codes::BadRequest, result.first);
 
 // table DNE
