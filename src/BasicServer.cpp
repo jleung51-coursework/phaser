@@ -201,6 +201,91 @@ get_request_t parse_get_request_paths(http_request message) {
 }
 
 /*
+  This local function returns a vector of JSON objects.
+  If the JSON body has no elements, then the vector will contain all
+  entities in the table.
+  If the JSON body has elements, then the vector will contain all
+  entities in the table which have all of the properties in the JSON body
+  (regardless of value).
+  Each element in the vector is a single entity.
+
+  JSON body:
+    JSON object where the name is the property name and the value is "*".
+    E.g. {"born":"*", "art":"*"} would return all entities in the requested
+    table which have properties "born" and "art".
+
+  An exception is thrown if:
+    The operation is incorrect or nonexistent (invalid_argument)
+    The table name is incorrect or nonexistent (invalid_argument)
+    Not all elements in the JSON body have the value "*" (invalid_argument)
+ */
+vector<value> get_table_or_properties(get_request_t request,
+                                      unordered_map<string, string> json_body) {
+
+  if (request.operation != read_entity_admin) {
+    throw std::invalid_argument ("Error: get_table_or_properties() was "\
+      "given an invalid operation.\n");
+  }
+
+  // Check for specified table
+  cloud_table table {table_cache.lookup_table(request.table)};
+  if ( !table.exists() ) {
+    throw std::invalid_argument ("Error: get_table_or_properties() was "\
+      "given an invalid table name.\n");
+  }
+
+  for(const auto v : json_body){
+    if(v.second != "*"){
+      throw std::invalid_argument ("Error: get_table_or_properties() was "\
+        "given a JSON body which had at least one element with a value "\
+        "other than \"*\".\n");
+    }
+  }
+
+  // Creating vector for all properties to loop through later
+  table_query query {};
+  table_query_iterator end;
+  table_query_iterator it = table.execute_query(query);
+  vector<value> entities;
+
+  while (it != end) {
+    cout << "Key: " << it->partition_key() << " / " << it->row_key() << endl;
+
+    prop_vals_t entity {
+      make_pair("Partition",value::string( it->partition_key() )),
+      make_pair("Row", value::string( it->row_key() ))
+    };
+    entity = get_properties(it->properties(), entity);
+
+    if(json_body.size() == 0) {
+      entities.push_back(value::object(entity));
+    }
+    else {
+      bool found_all_properties = true;
+      for(const auto desired_property : json_body) {
+        bool found_property = false;
+        for(const auto p : entity) {
+          if(desired_property.first == p.first) {
+            found_property = true;
+          }
+        }
+        if(!found_property) {
+          found_all_properties = false;
+        }
+      }
+
+      if(found_all_properties) {
+        entities.push_back(value::object(entity));
+      }
+    }
+
+    ++it;
+  }
+
+  return entities;
+}
+
+/*
   This local function returns a vector of JSON objects with all entities in a
   requested partition. Each element is a single entity.
 
