@@ -554,7 +554,20 @@ void handle_put(http_request message) {
   }
   else if(paths[0] == update_entity_auth){
     unordered_map<string,string> json_body {get_json_bourne (message)};
-    message.reply(update_with_token (message, tables_endpoint, json_body));
+    auto update_with_token_response = update_with_token (message, tables_endpoint, json_body);
+    if (update_with_token_response == status_codes::Forbidden)
+    {
+      if (paths[2].find("&sp=ru", 0) == string::npos)
+      {
+        message.reply(status_codes::Forbidden);
+        return;
+      }
+      else{
+        message.reply(status_codes::NotFound);
+        return;
+      }
+    }
+    message.reply(update_with_token_response);
     return;
   }
   else if(paths[0] == add_property_admin || paths[0] == update_property_admin) {
