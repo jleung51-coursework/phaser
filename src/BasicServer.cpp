@@ -605,17 +605,6 @@ void handle_get(http_request message) {
     return;
   }
 
-  // TODO: Outdated documentation
-  // GET all entities from a specific partition: Partition == paths[1], * == paths[2]
-  // Checking for malformed request
-  if (request.paths_count == 3)
-  {
-    //Path includes table and partition but no row
-    //Or table and row but no partition
-    //Or partition and row but no table
-    message.reply(status_codes::BadRequest);
-    return;
-  }
   // User has indicated they want all items in this partition by the `*`
   if (request.paths_count == 4 && request.row == "*")
   {
