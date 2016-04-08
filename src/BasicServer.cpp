@@ -552,9 +552,30 @@ void handle_put(http_request message) {
     message.reply(status_codes::NotImplemented);
     return;
   }
+  // Checking to ensure the table exists
+  // Should be done before anything else
+  cloud_table table {table_cache.lookup_table(paths[1])};
+  if ( ! table.exists()) {
+    message.reply(status_codes::NotFound);
+    return;
+  }
+
   else if(paths[0] == update_entity_auth){
     unordered_map<string,string> json_body {get_json_bourne (message)};
-    message.reply(update_with_token (message, tables_endpoint, json_body));
+    auto update_with_token_response = update_with_token (message, tables_endpoint, json_body);
+    if (update_with_token_response == status_codes::Forbidden)
+    {
+      if (paths[2].find("&sp=ru", 0) == string::npos)
+      {
+        message.reply(status_codes::Forbidden);
+        return;
+      }
+      else{
+        message.reply(status_codes::NotFound);
+        return;
+      }
+    }
+    message.reply(update_with_token_response);
     return;
   }
   else if(paths[0] == add_property_admin || paths[0] == update_property_admin) {
@@ -567,12 +588,6 @@ void handle_put(http_request message) {
   }
 
   unordered_map<string,string> json_body {get_json_bourne (message)};
-
-  cloud_table table {table_cache.lookup_table(paths[1])};
-  if ( ! table.exists()) {
-    message.reply(status_codes::NotFound);
-    return;
-  }
 
   table_entity entity {paths[2], paths[3]}; // partition and row
 
