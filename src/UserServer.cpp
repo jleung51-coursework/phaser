@@ -76,6 +76,60 @@ using prop_vals_t = vector<pair<string,value>>;
 
 constexpr const char* def_url = "http://localhost:34572";
 
+const string sign_on {"SignOn"}; //POST
+const string sign_off {"SignOff"}; //POST
+
+const string add_friend {"AddFriend"}; // PUT
+const string unfriend {"UnFriend"}; //PUT
+const string update_status {"UpdateStatus"}; //PUT
+
+const string get_friend_list {"ReadFriendList"}; //GET
+
+void handle_post (http_request message){
+	string path {uri::decode(message.relative_uri().path())};
+	cout << endl << "**** POST " << path << endl;
+	auto paths = uri::split_path(path);
+
+	if(/*basic criteria*/){}
+	else if (paths[0] == sign_on) {}
+	else if (paths[0] == sign_off) {}
+	else {
+		// malformed request
+		message.reply(status_codes::BadRequest, value::array(key_vec));
+		return;
+	}
+}
+
+void handle_put (http_request message) {
+	string path {uri::decode(message.relative_uri().path())};
+	cout << endl << "**** POST " << path << endl;
+	auto paths = uri::split_path(path);
+
+	if(/*basic criteria*/){}
+	else if (paths[0] == add_friend) {}
+	else if (paths[0] == unfriend) {}
+	else if (paths[0] == update_status) {}
+	else {
+		// malformed request
+		message.reply(status_codes::BadRequest, value::array(key_vec));
+		return;
+	}
+}
+
+void handle_get (http_request message) {
+	string path {uri::decode(message.relative_uri().path())};
+	cout << endl << "**** POST " << path << endl;
+	auto paths = uri::split_path(path);
+
+	if(/*basic criteria*/){}
+	else if (paths[0] == get_friend_list) {}
+	else {
+		// malformed request
+		message.reply(status_codes::BadRequest, value::array(key_vec));
+		return;
+	}
+}
+
 
 int main (int argc, char const * argv[]) {
   cout << "Parsing connection string" << endl;
@@ -86,6 +140,7 @@ int main (int argc, char const * argv[]) {
   listener.support(methods::GET, &handle_get); // Get user's friend list
   listener.support(methods::POST, &handle_post); // SignOn, SignOff
   listener.support(methods::PUT, &handle_put); // Add friend, Unfriend, Update Status
+  /*TO DO: Disallowed method*/
   listener.open().wait(); // Wait for listener to complete starting
 
   cout << "Enter carriage return to stop server." << endl;
