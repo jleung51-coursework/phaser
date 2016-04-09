@@ -526,7 +526,7 @@ SUITE(GET) {
 
     // missing table name
     result = do_request( methods::GET, string(BasicFixture::addr) + read_entity_admin + "/" + "/" + string(BasicFixture::partition) + "/*" );
-    CHECK_EQUAL( status_codes::NotFound, result.first);
+    CHECK_EQUAL( status_codes::BadRequest, result.first);
 
     // missing partition name
     result = do_request( methods::GET, string(BasicFixture::addr) + read_entity_admin + "/" + string(BasicFixture::table) + "//*" );
