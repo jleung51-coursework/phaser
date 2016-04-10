@@ -53,6 +53,7 @@ const string update_entity_auth {"UpdateEntityAuth"};
 
 const string get_read_token_op  {"GetReadToken"};
 const string get_update_token_op {"GetUpdateToken"};
+const string get_update_data_op {"GetUpdateData"};
 
 // The two optional operations from Assignment 1
 const string add_property_admin {"AddPropertyAdmin"};
