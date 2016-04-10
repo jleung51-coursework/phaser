@@ -85,17 +85,21 @@ const string update_status {"UpdateStatus"}; //PUT
 
 const string get_friend_list {"ReadFriendList"}; //GET
 
+// Cache of opened tables
+TableCache table_cache {};
+
 void handle_post (http_request message){
 	string path {uri::decode(message.relative_uri().path())};
 	cout << endl << "**** POST " << path << endl;
 	auto paths = uri::split_path(path);
 
-	if(/*basic criteria*/){}
+	if(true/*basic criteria*/){}
 	else if (paths[0] == sign_on) {}
 	else if (paths[0] == sign_off) {}
 	else {
 		// malformed request
-		message.reply(status_codes::BadRequest, value::array(key_vec));
+		vector<value> vec;
+		message.reply(status_codes::BadRequest, value::array(vec));
 		return;
 	}
 }
@@ -105,13 +109,14 @@ void handle_put (http_request message) {
 	cout << endl << "**** POST " << path << endl;
 	auto paths = uri::split_path(path);
 
-	if(/*basic criteria*/){}
+	if(true/*basic criteria*/){}
 	else if (paths[0] == add_friend) {}
 	else if (paths[0] == unfriend) {}
 	else if (paths[0] == update_status) {}
 	else {
 		// malformed request
-		message.reply(status_codes::BadRequest, value::array(key_vec));
+		vector<value> vec;
+		message.reply(status_codes::BadRequest, value::array(vec));
 		return;
 	}
 }
@@ -121,11 +126,12 @@ void handle_get (http_request message) {
 	cout << endl << "**** POST " << path << endl;
 	auto paths = uri::split_path(path);
 
-	if(/*basic criteria*/){}
+	if(true/*basic criteria*/){}
 	else if (paths[0] == get_friend_list) {}
 	else {
 		// malformed request
-		message.reply(status_codes::BadRequest, value::array(key_vec));
+		vector<value> vec;
+		message.reply(status_codes::BadRequest, value::array(vec));
 		return;
 	}
 }
