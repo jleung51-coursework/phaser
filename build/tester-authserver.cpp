@@ -280,6 +280,121 @@ SUITE(GET_READ_TOKEN){
   }
 }
 
+SUITE(GET_UPDATE_TOKEN){
+  TEST_FIXTURE(AuthFixture, GetUpdateToken){
+    pair<status_code, value> result;
+    vector<pair<string,value>> passwordbody;
+
+   //correct everything
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_token_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    passwordbody.clear();
+
+  }
+}
+
+SUITE(GET_UPDATE_DATA){
+  TEST_FIXTURE(AuthFixture, GetUpdateData){
+    pair<status_code, value> result;
+    vector<pair<string,value>> passwordbody;
+
+    //correct everything, OK
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    passwordbody.clear();
+
+    //no GetUpdateData, badrequest
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    passwordbody.clear();
+
+    //userid missing, badrequest
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + "/",
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    passwordbody.clear();
+
+    //password property missing, badrequest
+    passwordbody.push_back( make_pair( "NotPassword", value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    passwordbody.clear();
+
+    //multiple properties, badrequest
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    passwordbody.push_back( make_pair( "NotAProperty", value::string("NotAPassword") ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    passwordbody.clear();
+
+    //empty password, badrequest
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string("") ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    passwordbody.clear();
+
+    //userid not found in table, not found
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string(user_pwd) ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + "WrongUser",
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+    passwordbody.clear();
+
+    //correct userid, wrong password, not found
+    passwordbody.push_back( make_pair( string(AuthFixture::auth_pwd_prop), value::string("WrongPassword") ) );
+    result = do_request( methods::GET,
+      string(AuthFixture::auth_addr)
+      + get_update_data_op + "/"
+      + string(AuthFixture::userid),
+      value::object(passwordbody) );
+    //CHECK_EQUAL(3,  result.second.size() );
+    CHECK_EQUAL(status_codes::NotFound, result.first);
+    passwordbody.clear();
+
+  }
+
+
+}
 
 SUITE(GET_UPDATE_TOKEN){
   TEST_FIXTURE(AuthFixture, GetUpdateToken){
