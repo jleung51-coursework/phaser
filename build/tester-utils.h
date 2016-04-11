@@ -59,6 +59,14 @@ const string get_update_data_op {"GetUpdateData"};
 const string add_property_admin {"AddPropertyAdmin"};
 const string update_property_admin {"UpdatePropertyAdmin"};
 
+// UserServer Operations
+const string sign_on {"SignOn"};
+const string sign_off {"SignOff"};
+const string add_friend {"AddFriend"};
+const string un_friend {"UnFriend"};
+const string update_status {"UpdateStatus"};
+const string read_friend_list {"ReadFriendList"};
+
 }
 
 /*

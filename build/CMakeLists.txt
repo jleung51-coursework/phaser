@@ -33,6 +33,7 @@ add_executable (
   tester-utils.h
   tester-basicserver.cpp
   tester-authserver.cpp
+  tester-userserver.cpp
   testmain.cpp
 )
 target_link_libraries (tester ${REST} ${REST_LIBRARIES} ${STORE} ${TEST})
