@@ -123,7 +123,8 @@ public:
         vector<pair<string,value>>{make_pair(string(friends),value::string(friends_val_1)),
           make_pair(string(status),value::string(status_val_1)),
           make_pair(string(updates),value::string(updates_val))
-      )};
+        }
+      );
       cerr << "data table insertion result " << put_result << endl;
       if (put_result != status_codes::OK) {
         throw std::exception();
@@ -137,7 +138,8 @@ public:
         vector<pair<string,value>>{make_pair(string(friends),value::string(friends_val_2)),
           make_pair(string(status),value::string(status_val_2)),
           make_pair(string(updates),value::string(updates_val))
-      )};
+        }
+      );
       cerr << "data table insertion result " << put_result << endl;
       if (put_result != status_codes::OK) {
         throw std::exception();
