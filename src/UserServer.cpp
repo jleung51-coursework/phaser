@@ -251,7 +251,14 @@ void handle_post (http_request message){
   }
 
   else if(operation == sign_off) {
-    message.reply(status_codes::NotImplemented);
+    auto session = sessions.find(userid);
+    if(session == sessions.end()) {
+      message.reply(status_codes::NotFound);
+      return;
+    }
+
+    sessions.erase(session);
+    message.reply(status_codes::OK);
     return;
   }
 
