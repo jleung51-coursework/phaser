@@ -2,7 +2,7 @@
   Push Server code for CMPT 276 Group Assignment, Spring 2016.
 
   This server pushes status updates to all a user’s friends in the network.
-  
+
   This server supports a single operation: push a status update to all friends
   of this user.
 
@@ -75,3 +75,29 @@ using web::http::experimental::listener::http_listener;
 using prop_vals_t = vector<pair<string,value>>;
 
 constexpr const char* def_url = "http://localhost:34574";
+
+TableCache table_cache {};
+
+void handle_post (http_request message) {
+  //TODO Not implemented yet!
+  message.reply(status_codes::NotImplemented);
+  return;
+}
+
+int main (int argc, char const * argv[]) {
+  cout << "Parsing connection string" << endl;
+  table_cache.init (storage_connection_string);
+
+  cout << "Opening listener" << endl;
+  http_listener listener {def_url};
+  listener.support(methods::POST, &handle_post); // Push a status update to friends
+  listener.open().wait();
+
+  cout << "Enter carriage return to stop server." << endl;
+  string line;
+  getline(std::cin, line);
+
+  // Shut it down
+  listener.close().wait();
+  cout << "Closed" << endl;
+}
