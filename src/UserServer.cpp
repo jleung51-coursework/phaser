@@ -88,6 +88,64 @@ const string get_friend_list {"ReadFriendList"}; //GET
 // Cache of opened tables
 TableCache table_cache {};
 
+/*
+  Return true if an HTTP request has a JSON body
+
+  This routine can be called multiple times on the same message.
+ */
+bool has_json_body (http_request message) {
+  return message.headers()["Content-type"] == "application/json";
+}
+
+/*
+  Given an HTTP message with a JSON body, return the JSON
+  body as an unordered map of strings to strings.
+  get_json_body and get_json_bourne are valid and identical function calls.
+
+  If the message has no JSON body, return an empty map.
+
+  THIS ROUTINE CAN ONLY BE CALLED ONCE FOR A GIVEN MESSAGE
+  (see http://microsoft.github.io/cpprestsdk/classweb_1_1http_1_1http__request.html#ae6c3d7532fe943de75dcc0445456cbc7
+  for source of this limit).
+
+  Note that all types of JSON values are returned as strings.
+  Use C++ conversion utilities to convert to numbers or dates
+  as necessary.
+ */
+unordered_map<string,string> get_json_body(http_request message) {
+  unordered_map<string,string> results {};
+  const http_headers& headers {message.headers()};
+  auto content_type (headers.find("Content-Type"));
+  if (content_type == headers.end() ||
+      content_type->second != "application/json")
+    return results;
+
+  value json{};
+  message.extract_json(true)
+    .then([&json](value v) -> bool
+          {
+            json = v;
+            return true;
+          })
+    .wait();
+
+  if (json.is_object()) {
+    for (const auto& v : json.as_object()) {
+      if (v.second.is_string()) {
+        results[v.first] = v.second.as_string();
+      }
+      else {
+        results[v.first] = v.second.serialize();
+      }
+    }
+  }
+  return results;
+}
+
+unordered_map<string,string> get_json_bourne(http_request message) {
+ return get_json_body(message);
+}
+
 void handle_post (http_request message){
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
