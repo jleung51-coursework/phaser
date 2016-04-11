@@ -61,6 +61,7 @@ add_executable (
   userserver
   ../src/UserServer.cpp
   ../src/TableCache.cpp
+  ../src/ClientUtils.cpp
   ../include/TableCache.h
   ../include/make_unique.h
   ../include/ClientUtils.h
@@ -71,6 +72,7 @@ add_executable (
   pushserver
   ../src/PushServer.cpp
   ../src/TableCache.cpp
+  ../src/ClientUtils.cpp
   ../include/TableCache.h
   ../include/make_unique.h
   ../include/ClientUtils.h
