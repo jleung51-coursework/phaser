@@ -151,13 +151,30 @@ void handle_post (http_request message){
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
 
-  if(true/*basic criteria*/){}
-  else if (paths[0] == sign_on) {}
-  else if (paths[0] == sign_off) {}
+  // Operation name and user ID
+  if(paths.size() < 2) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  else if(paths[0] != sign_on && paths[0] != sign_off) {
+    message.reply(status_codes::BadRequest);
+  }
+
+  const string operation = paths[0];
+  const string userid = paths[1];
+
+  if(operation == sign_on) {
+    message.reply(status_codes::NotImplemented);
+    return;
+  }
+
+  else if(operation == sign_off) {
+    message.reply(status_codes::NotImplemented);
+    return;
+  }
+
   else {
-    // malformed request
-    vector<value> vec;
-    message.reply(status_codes::BadRequest, value::array(vec));
+    message.reply(status_codes::InternalError);
     return;
   }
 }
