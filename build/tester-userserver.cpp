@@ -1,5 +1,5 @@
 /*
-  This C++ file contains unit tests for the authentication server.
+  This C++ file contains unit tests for the user server.
  */
 
 #include <algorithm>
