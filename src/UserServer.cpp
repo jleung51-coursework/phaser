@@ -30,8 +30,6 @@
 
 #include "../include/TableCache.h"
 
-#include "../include/make_unique.h"
-
 #include "../include/azure_keys.h"
 
 #include "../include/ServerUtils.h"
@@ -85,9 +83,6 @@ const string update_status {"UpdateStatus"}; //PUT
 
 const string get_friend_list {"ReadFriendList"}; //GET
 
-// Cache of opened tables
-TableCache table_cache {};
-
 void handle_post (http_request message){
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
@@ -138,9 +133,6 @@ void handle_get (http_request message) {
 
 
 int main (int argc, char const * argv[]) {
-  cout << "Parsing connection string" << endl;
-  table_cache.init (storage_connection_string);
-
   cout << "Opening listener" << endl;
   http_listener listener {def_url};
   listener.support(methods::GET, &handle_get); // Get user's friend list
