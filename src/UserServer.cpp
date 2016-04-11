@@ -85,6 +85,21 @@ const string update_status {"UpdateStatus"}; //PUT
 
 const string get_friend_list {"ReadFriendList"}; //GET
 
+bool check_active (string userid){
+  bool active = true;
+
+  if(true /*token DNE*/) {
+    active = false;
+  }
+
+  if(true /*entry DNE*/) {
+    active = false;
+  }
+
+  return active;
+
+}
+
 void handle_post (http_request message){
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
@@ -132,13 +147,16 @@ void handle_get (http_request message) {
 
   const string userid = paths[1]; // obtains userid (parameter)
 
-  //user not signed in -- entry not found in the table
-  if(true) {
+  // user not signed in -- The auth server does not return a token and the expected record doesn't exist in DataTable
+  bool active = check_active(userid);
+
+  if(!active) {
     message.reply(status_codes::Forbidden, value::array(vec));
     return;
   }
   else{ // if user is active
-    
+    // reads friends and parse 
+
     message.reply(status_codes::OK, value::array(vec));
     return;
   }
