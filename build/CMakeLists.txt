@@ -62,6 +62,8 @@ target_link_libraries (authserver ${REST} ${REST_LIBRARIES} ${STORE})
 add_executable (
   userserver
   ../src/UserServer.cpp
+  ../src/ClientUtils.cpp
+  ../include/make_unique.h
   ../include/ClientUtils.h
 )
 target_link_libraries (userserver ${REST} ${REST_LIBRARIES} ${STORE})
@@ -69,6 +71,8 @@ target_link_libraries (userserver ${REST} ${REST_LIBRARIES} ${STORE})
 add_executable (
   pushserver
   ../src/PushServer.cpp
+  ../src/ClientUtils.cpp
+  ../include/make_unique.h
   ../include/ClientUtils.h
 )
 target_link_libraries (pushserver ${REST} ${REST_LIBRARIES} ${STORE})

@@ -3,10 +3,10 @@
 
   However the build_json_value () functions may also
   be useful in server code that needs to construct a
-  JSON value for a response to its client.  
+  JSON value for a response to its client.
  */
 
-#include "ClientUtils.h"
+#include "../include/ClientUtils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -49,7 +49,7 @@ using web::json::value;
   of the result is simply json::value {}.
 
   If the URI denotes an address/port combination that cannot be
-  located (say because the server is not running or the port 
+  located (say because the server is not running or the port
   number is incorrect), the routine throws a web::uri_exception().
 
   NOTE:  This version differs slightly from the do_request() that
@@ -59,7 +59,7 @@ using web::json::value;
   as the second half of the pair.  The old version returned
   a null JSON value (value {}).  The old version was more
   precise but the new version is easier to work with, albeit
-  ambiguous in some edge cases that don't matter for these 
+  ambiguous in some edge cases that don't matter for these
   assignments.
 
   You're welcome to read this code but bear in mind: It's the single
@@ -106,7 +106,7 @@ pair<status_code,value> do_request (const method& http_method, const string& uri
 }
 
 /*
- Return a JSON object value whose (0 or more) properties are specified as a 
+ Return a JSON object value whose (0 or more) properties are specified as a
  vector of <string,string> pairs
  */
 value build_json_value (const vector<pair<string,string>>& props) {
@@ -162,7 +162,7 @@ value build_json_value (const string& pname1, const string& pval1,
  */
 unordered_map<string,string> unpack_json_object (const value& v) {
   assert(v.is_object());
-  
+
   unordered_map<string,string> res {};
   object obj {v.as_object()};
   for (const auto& p : obj) {
@@ -243,10 +243,10 @@ static pos_t next_delim (const string& s, char delim, pos_t start) {
  If a pair does not include a pair_delimeter, the function throws a
  std::invalid_argument.
 
- If there are characters after the last pair_separator that do not include a 
+ If there are characters after the last pair_separator that do not include a
  pair_delimiter, they are ignored.
 
- Assuming pair_separator is '|' and pair_delimiter is ';', correct 
+ Assuming pair_separator is '|' and pair_delimiter is ';', correct
  friends_list strings would include
 
    "USA;Madonna|Canada;Edwards,Kathleen|Korea;BigBang" (standard form)
@@ -267,7 +267,7 @@ friends_list_t parse_friends_list (const string& friends_list) {
   if (friends_list[start] == pair_separator)
     start++; // Skip any initial separator
   for (pos_t delim {next_delim (friends_list, pair_delimiter, start)};
-       delim != string::npos; 
+       delim != string::npos;
        delim = next_delim (friends_list, pair_delimiter, start)) {
     pos_t end {next_delim (friends_list, pair_separator, start)};
     if (end == string::npos)
@@ -283,7 +283,7 @@ friends_list_t parse_friends_list (const string& friends_list) {
 }
 
 /*
-  Return the string representation of a friends list 
+  Return the string representation of a friends list
  */
 string friends_list_to_string (const friends_list_t& list) {
   string result {};
