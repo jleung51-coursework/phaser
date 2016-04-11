@@ -34,6 +34,7 @@ add_executable (
   tester-basicserver.cpp
   tester-authserver.cpp
   tester-userserver.cpp
+  tester-pushserver.cpp
   testmain.cpp
 )
 target_link_libraries (tester ${REST} ${REST_LIBRARIES} ${STORE} ${TEST})
