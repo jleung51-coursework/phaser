@@ -176,7 +176,77 @@ void handle_post (http_request message){
   const string userid = paths[1];
 
   if(operation == sign_on) {
-    message.reply(status_codes::NotImplemented);
+    if(!has_json_body(message)) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+
+    unordered_map<string, string> json_body {get_json_bourne(message)};
+    if(json_body.size() != 1) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+
+    unordered_map<string, string>::const_iterator json_body_password_iterator {json_body.find("Password")};
+    // No 'Password' property
+    if(json_body_password_iterator == json_body.end()) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+
+    vector<pair<string, value>> json_pw;
+    json_pw.push_back(make_pair(
+        json_body_password_iterator->first,
+        value::string(json_body_password_iterator->second)
+    ));
+
+    pair<status_code, value> result;
+    result = do_request(
+      methods::GET,
+      string(auth_url) + "/" +
+      get_update_data_op + "/" +
+      userid,
+      value::object(json_pw)
+    );
+    if(result.first != status_codes::OK) {
+      message.reply(result.first);
+      return;
+    }
+    else if(result.second.size() != 3) {
+      message.reply(status_codes::InternalError);
+      return;
+    }
+
+    const string token = get_json_object_prop(
+      result.second,
+      "token"
+    );
+    const string data_partition = get_json_object_prop(
+      result.second,
+      "DataPartition"
+    );
+    const string data_row = get_json_object_prop(
+      result.second,
+      "DataRow"
+    );
+    if(token.empty() ||
+       data_partition.empty() ||
+       data_row.empty() ) {
+      message.reply(status_codes::InternalError);
+      return;
+    }
+
+    std::tuple<string, string, string> tuple_insert(
+      token,
+      data_partition,
+      data_row);
+    std::pair<string, std::tuple<string, string, string>> pair_insert(
+      userid,
+      tuple_insert
+    );
+    sessions.insert(pair_insert);
+
+    message.reply(status_codes::OK);
     return;
   }
 
