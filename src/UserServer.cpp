@@ -29,6 +29,7 @@
 #include <was/table.h>
 
 #include "../include/TableCache.h"
+#include "../include/ClientUtils.h"
 
 #include "../include/make_unique.h"
 
@@ -62,9 +63,13 @@ using std::string;
 using std::unordered_map;
 using std::vector;
 
+using web::http::client::http_client;
 using web::http::http_headers;
 using web::http::http_request;
+using web::http::http_response;
+using web::http::method;
 using web::http::methods;
+using web::http::status_code;
 using web::http::status_codes;
 using web::http::uri;
 
@@ -74,7 +79,11 @@ using web::http::experimental::listener::http_listener;
 
 using prop_vals_t = vector<pair<string,value>>;
 
+constexpr const char* auth_url = "http://localhost:34570";
 constexpr const char* def_url = "http://localhost:34572";
+
+const string get_update_data_op {"GetUpdateData"};
+const string update_entity_auth_op {"UpdateEntityAuth"};
 
 const string sign_on {"SignOn"}; //POST
 const string sign_off {"SignOff"}; //POST
@@ -87,6 +96,9 @@ const string get_friend_list {"ReadFriendList"}; //GET
 
 // Cache of opened tables
 TableCache table_cache {};
+
+// Cache of active sessions
+std::unordered_map< string, std::tuple<string, string, string> > sessions;
 
 /*
   Return true if an HTTP request has a JSON body
