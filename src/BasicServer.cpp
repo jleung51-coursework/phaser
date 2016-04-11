@@ -155,7 +155,8 @@ TableCache table_cache {};
       (see documentation for handle_get) (invalid_argument)
  */
 get_request_t parse_get_request_paths(http_request message) {
-  string path { uri::decode(message.relative_uri().path()) };
+  // string path { uri::decode(message.relative_uri().path()) };
+  string path = message.relative_uri().path();
   auto paths = uri::split_path(path);
 
   get_request_t req;
@@ -595,7 +596,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     // TODO: This does not safely handle a property named "Partition" or "Row".
  */
 void handle_get(http_request message) {
-  string path {uri::decode(message.relative_uri().path())};
+  // string path {uri::decode(message.relative_uri().path())};
+  string path = message.relative_uri().path();
   cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
   // Need at least an operation name and table name
