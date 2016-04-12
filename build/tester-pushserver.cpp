@@ -46,39 +46,43 @@ using namespace rest_operations;
 class PushFixture {
 public:
 
-  // User Entity 0  
+  // User Entity 0
   static constexpr const char* userid_0 {"user_0"};
   static constexpr const char* row_0 {"0,Ben"};
 
-  static constexpr const char* friends_val_0 {"1,Ben|2,Ben"};
-  static constexpr const char* status_val_0 {"A status update which is 47 characters long by 0"};
-  static constexpr const char* status_update_0 {"A status update which is 52 characters long by 0"};
+  static constexpr const char* friends_val_0 {"USA;1,Ben|USA;2,Ben"};
+  static constexpr const char* status_val_0 {"A_status_update_which_is_47_characters_long_by_0"};
+  static constexpr const char* status_update_0 {"A_status_update_which_is_52_characters_long_by_0"};
 
-  // User Entity 1  
+  // User Entity 1
   static constexpr const char* userid_1 {"user_1"};
   static constexpr const char* row_1 {"1,Ben"};
 
-  static constexpr const char* friends_val_1 {"0,Ben|2,Ben"};
-  static constexpr const char* status_val_1 {"A status update which is 47 characters long by 1"};
-  static constexpr const char* status_update_1 {"A status update which is 52 characters long by 1"};
+  static constexpr const char* friends_val_1 {"USA;0,Ben|USA;2,Ben"};
+  static constexpr const char* status_val_1 {"A_status_update_which_is_47_characters_long_by_1"};
+  static constexpr const char* status_update_1 {"A_status_update_which_is_52_characters_long_by_1"};
 
-  // User Entity 2  
+  // User Entity 2
   static constexpr const char* userid_2 {"user_2"};
   static constexpr const char* row_2 {"2,Ben"};
 
-  static constexpr const char* friends_val_2 {"0,Ben|1,Ben"};
-  static constexpr const char* status_val_2 {"A status update which is 47 characters long by 2"};
-  static constexpr const char* status_update_2 {"A status update which is 52 characters long by 2"};
+  static constexpr const char* friends_val_2 {"USA;0,Ben|USA;1,Ben"};
+  static constexpr const char* status_val_2 {"A_status_update_which_is_47_characters_long_by_2"};
+  static constexpr const char* status_update_2 {"A_status_update_which_is_52_characters_long_by_2"};
 
   // Constants for initializing tests
   // Represents a user's credentials
   static constexpr const char* addr {"http://localhost:34568/"};
   static constexpr const char* auth_addr {"http://localhost:34570/"};
   static constexpr const char* user_addr {"http://localhost:34572/"};
+  static constexpr const char* push_addr {"http://localhost:34574/"};
+
   static constexpr const char* user_pwd {"user"};
   static constexpr const char* auth_table {"AuthTable"};
   static constexpr const char* auth_table_partition {"Userid"};
   static constexpr const char* auth_pwd_prop {"Password"};
+
+  static constexpr const char* push_status_op {"PushStatus"};
 
   // Represents the user's entry including friends and status
   static constexpr const char* table {"DataTable"};
@@ -87,7 +91,6 @@ public:
   static constexpr const char* status {"Status"};
   static constexpr const char* updates {"Updates"};
   static constexpr const char* updates_val {""};
-
 
 public:
   PushFixture() {
@@ -211,7 +214,7 @@ public:
         addr,
         auth_table,
         auth_table_partition,
-        userid_1,
+        userid_2,
         properties
       )};
       cerr << "auth table insertion result " << user_result << endl;
@@ -272,7 +275,7 @@ public:
         auth_table_partition,
         userid_0
       )};
-      cout << "delete authtable result " << del_ent_result << endl;
+      cout << "delete authtable result 0 " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
         throw std::exception();
       }
@@ -285,7 +288,7 @@ public:
         auth_table_partition,
         userid_1
       )};
-      cout << "delete authtable result " << del_ent_result << endl;
+      cout << "delete authtable result 1 " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
         throw std::exception();
       }
@@ -298,7 +301,7 @@ public:
         auth_table_partition,
         userid_2
       )};
-      cout << "delete authtable result " << del_ent_result << endl;
+      cout << "delete authtable result 2 " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
         throw std::exception();
       }
@@ -306,3 +309,117 @@ public:
 
   }
 };
+
+SUITE(PUSH_SERVER){
+
+  TEST_FIXTURE(PushFixture, PushStatus) {
+    pair<status_code,value> result;
+    vector<pair<string, value>> friends_list;
+
+    //no Push Status -- Bad Request
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + "NotPushStatus" + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    friends_list.clear();
+
+    //no Friends property -- Bad Request
+    friends_list.push_back( make_pair("NotFriends", value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    friends_list.clear();
+
+    //too many properties -- Bad Request
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    friends_list.push_back( make_pair("TooMany", value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    friends_list.clear();
+
+    //wrong number of parameters -- Bad Request
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  //+ PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    friends_list.clear();
+
+    //wrong number of parameters -- Bad Request
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+    friends_list.clear();
+
+    //no friends body given -- Bad Request
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0);
+    CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    friends_list.clear();
+
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_1,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    friends_list.clear();
+
+    //get updated status -- should be different
+    result = do_request( methods::GET,
+      string(PushFixture::addr)
+                  + "ReadEntityAdmin/"
+                  + PushFixture::table + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0);
+    CHECK_EQUAL(status_codes::OK, result.first);
+
+
+  } // bracket for testfixture
+
+} //bracket for suite(pushserver)

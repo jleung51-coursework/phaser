@@ -310,7 +310,7 @@ void handle_get (http_request message) {
   const string row = std::get<2>(found->second);
 
   pair<status_code,value> result = do_request (methods::GET,
-                                               def_url + operation + "/" + table + "/" + token + "/" + partition + "/" + row );
+                                               server_urls::basic_server + operation + "/" + table + "/" + token + "/" + partition + "/" + row );
 
   unordered_map<string,string> json_body = unpack_json_object(result.second);
   friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
