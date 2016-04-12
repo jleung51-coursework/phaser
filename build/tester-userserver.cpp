@@ -163,7 +163,7 @@ public:
   }
 };
 
-SUITE(USERSERVER_SIGNON) {
+SUITE(USERSERVER_POST) {
 	TEST_FIXTURE(UserFixture, Proper) {
 		vector<pair<string, value>> password_json;
 		pair<status_code, value> result;
@@ -200,7 +200,7 @@ SUITE(USERSERVER_SIGNON) {
 		password_json.clear();
 	}
 
-	TEST_FIXTURE(UserFixture, BadRequest) {
+	TEST_FIXTURE(UserFixture, SignOn_BadRequest) {
 		vector<pair<string, value>> password_json;
 		pair<status_code, value> result;
 
@@ -305,7 +305,7 @@ SUITE(USERSERVER_SIGNON) {
 		password_json.clear();
 	}
 
-	TEST_FIXTURE(UserFixture, IncorrectParameters) {
+	TEST_FIXTURE(UserFixture, SignOn_IncorrectParameters) {
 		vector<pair<string, value>> password_json;
 		pair<status_code, value> result;
 
