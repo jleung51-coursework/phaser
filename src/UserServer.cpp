@@ -311,6 +311,7 @@ void handle_put (http_request message) {
       string(paths[3]),
       result.second
       );
+    message.reply(status::codes::OK);
     return;
   }
   else if (paths[0] == unfriend) {}
