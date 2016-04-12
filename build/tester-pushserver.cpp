@@ -214,7 +214,7 @@ public:
         addr,
         auth_table,
         auth_table_partition,
-        userid_1,
+        userid_2,
         properties
       )};
       cerr << "auth table insertion result " << user_result << endl;
@@ -352,7 +352,7 @@ SUITE(PUSH_SERVER){
                   + PushFixture::row_0);
     CHECK_EQUAL(status_codes::OK, result.first);
 
-    //string new_updates_val {}
+    //string new_updates_val {};
 
   
     //no Push Status -- Bad Request
