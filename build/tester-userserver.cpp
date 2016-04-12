@@ -48,7 +48,7 @@ public:
 
 	// Constants for initializing tests
 	// Represents a user's credentials
-	static constexpr const char* addr {"http://localhost:34568/"};
+	static constexpr const char* basic_addr {"http://localhost:34568/"};
 	static constexpr const char* auth_addr {"http://localhost:34570/"};
 	static constexpr const char* user_addr {"http://localhost:34572/"};
 	static constexpr const char* userid {"user"};
@@ -79,13 +79,13 @@ public:
 
     // Create table DataTable and add a test entry
     {
-      int make_result {create_table(addr, table)};
+      int make_result {create_table(basic_addr, table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
         throw std::exception();
       }
       int put_result {put_entity (
-        addr,
+        basic_addr,
         table,
         partition,
         row,
@@ -103,7 +103,7 @@ public:
     // Create table AuthTable and add an entry authenticating the test case
     // in DataTable
     {
-      int make_result {create_table(addr, auth_table)};
+      int make_result {create_table(basic_addr, auth_table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
         throw std::exception();
@@ -117,7 +117,7 @@ public:
       assert(properties.size() == 3);
 
       int user_result {put_entity (
-        addr,
+        basic_addr,
         auth_table,
         auth_table_partition,
         userid,
@@ -136,7 +136,7 @@ public:
     // Delete entry in DataTable
     {
       int del_ent_result {delete_entity (
-        addr,
+        basic_addr,
         table,
         partition,
         row
@@ -150,7 +150,7 @@ public:
     // Delete entry in AuthTable
     {
       int del_ent_result {delete_entity (
-        addr,
+        basic_addr,
         auth_table,
         auth_table_partition,
         userid
