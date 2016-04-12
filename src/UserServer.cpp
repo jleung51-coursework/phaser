@@ -64,6 +64,7 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
+using std::get;
 
 using web::http::client::http_client;
 using web::http::http_headers;
