@@ -197,7 +197,11 @@ void handle_post (http_request message) {
 
   for ( int i = 0; i < friends_list.size(); i++ ){
     // get properties of entity
-    result = do_request(methods::GET, def_url + data_table_name + "/" + read_entity_admin + "/" + string(friends_list[i].first) + "/" + string(friends_list[i].second) );
+    result = do_request(methods::GET, def_url 
+      + data_table_name + "/" 
+      + read_entity_admin + "/" 
+      + string(friends_list[i].first) + "/" 
+      + string(friends_list[i].second) );
     //CHECK_EQUAL(status_codes::OK, result.first);
     //get old updates
     old_updates = get_json_object_prop(result.second, "Updates");
@@ -205,6 +209,7 @@ void handle_post (http_request message) {
       message.reply(status_codes::InternalError);
         return;
     }
+    cout << "Old Statuses: " << old_updates << endl;
     //add new update
     new_updates = string(paths[3]) + old_updates;
     update_property.push_back( make_pair("Updates", value::string(new_updates) ) );
@@ -216,7 +221,7 @@ void handle_post (http_request message) {
       + string(friends_list[i].second), value::object(update_property) );
     //CHECK_EQUAL(status_codes::OK, result.first);
     update_property.clear();
-
+    cout << "Updated Statuses: " << new_updates << endl;
   }
   
   message.reply(status_codes::OK);
