@@ -35,6 +35,7 @@
 //#include "../include/azure_keys.h"
 
 #include "../include/ServerUtils.h"
+#include "../include/ClientUtils.h"
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
@@ -65,6 +66,7 @@ using std::vector;
 using web::http::http_headers;
 using web::http::http_request;
 using web::http::methods;
+using web::http::status_code;
 using web::http::status_codes;
 using web::http::uri;
 
@@ -72,34 +74,21 @@ using web::json::value;
 
 using web::http::experimental::listener::http_listener;
 
-using prop_vals_t = vector<pair<string,value>>;
+//using prop_vals_t = vector<pair<string,value>>;
+using friends_list_t = std::vector<std::pair<std::string,std::string>>;
 
 constexpr const char* def_url = "http://localhost:34574";
 
 const string push_status_op {"PushStatus"};
+const string read_entity_admin {"ReadEntityAdmin"};
+const string update_entity_admin {"UpdateEntityAdmin"};
+
+const string data_table_name {"DataTable"};
 
 //TableCache table_cache {};
 
-//---------------------------------------------------------------------------------------
-// useful functions from authserver
 
-/*
-  Convert properties represented in Azure Storage type
-  to prop_str_vals_t type.
- */
-prop_str_vals_t get_string_properties (const table_entity::properties_type& properties) {
-  prop_str_vals_t values {};
-  for (const auto v : properties) {
-    if (v.second.property_type() == edm_type::string) {
-      values.push_back(make_pair(v.first,v.second.string_value()));
-    }
-    else {
-      // Force the value as string in any case
-      values.push_back(make_pair(v.first, v.second.str()));
-    }
-  }
-  return values;
-}
+//---------------------------------------------------------------------------------------
 
 /*
   Return true if an HTTP request has a JSON body
@@ -159,55 +148,12 @@ unordered_map<string,string> get_json_bourne(http_request message) {
  return get_json_body(message);
 }
 
-/*
-  Return a token for 24 hours of access to the specified table,
-  for the single entity defind by the partition and row.
-
-  permissions: A bitwise OR ('|')  of table_shared_access_poligy::permission
-    constants.
-
-    For read-only:
-      table_shared_access_policy::permissions::read
-    For read and update:
-      table_shared_access_policy::permissions::read |
-      table_shared_access_policy::permissions::update
- */
-pair<status_code,string> do_get_token (const cloud_table& data_table,
-                   const string& partition,
-                   const string& row,
-                   uint8_t permissions) {
-
-  utility::datetime exptime {utility::datetime::utc_now() + utility::datetime::from_days(1)};
-  try {
-    string limited_access_token {
-      data_table.get_shared_access_signature(table_shared_access_policy {
-                                               exptime,
-                                               permissions},
-                                             string(), // Unnamed policy
-                                             // Start of range (inclusive)
-                                             partition,
-                                             row,
-                                             // End of range (inclusive)
-                                             partition,
-                                             row)
-        // Following token allows read access to entire table
-        //table.get_shared_access_signature(table_shared_access_policy {exptime, permissions})
-      };
-    cout << "Token " << limited_access_token << endl;
-    return make_pair(status_codes::OK, limited_access_token);
-  }
-  catch (const storage_exception& e) {
-    cout << "Azure Table Storage error: " << e.what() << endl;
-    cout << e.result().extended_error().message() << endl;
-    return make_pair(status_codes::InternalError, string{});
-  }
-}
 
 //---------------------------------------------------------------------------------------
 
 void handle_post (http_request message) {
   //TODO Not implemented yet!
-  message.reply(status_codes::NotImplemented);
+  //message.reply(status_codes::NotImplemented);
   
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
@@ -228,7 +174,7 @@ void handle_post (http_request message) {
   }
 
   unordered_map<string, string> json_body {get_json_bourne(message)};
-  unordered_map<string, string>::const_iterator json_body_password_iterator
+  unordered_map<string, string>::const_iterator json_body_friends_iterator
     {json_body.find("Friends")};
   
   if(json_body.size() != 1) {
@@ -236,12 +182,44 @@ void handle_post (http_request message) {
     return;
   }
   // No 'Friends' property
-  else if(json_body_password_iterator == json_body.end()) {
+  else if(json_body_friends_iterator == json_body.end()) {
     message.reply(status_codes::BadRequest);
     return;
   }
 
+  string friends_list_unparsed {json_body_friends_iterator->second};
+  friends_list_t friends_list { parse_friends_list(friends_list_unparsed) };
+  string old_updates;
+  string new_updates;
+  pair<status_code,value> result;
+  vector<pair<string,value>> update_property;
+  //update_property.push_back( make_pair ("Updates", value::string("*") ) );
+
+  for ( int i = 0; i < friends_list.size(); i++ ){
+    // get properties of entity
+    result = do_request(methods::GET, def_url + data_table_name + "/" + read_entity_admin + "/" + string(friends_list[i].first) + "/" + string(friends_list[i].second) );
+    //CHECK_EQUAL(status_codes::OK, result.first);
+    //get old updates
+    old_updates = get_json_object_prop(result.second, "Updates");
+    if (old_updates == ""){
+      message.reply(status_codes::InternalError);
+        return;
+    }
+    //add new update
+    new_updates = string(paths[3]) + old_updates;
+    update_property.push_back( make_pair("Updates", value::string(new_updates) ) );
+    //update property of friend
+    result = do_request(methods::PUT, def_url 
+      + data_table_name + "/" 
+      + update_entity_admin + "/" 
+      + string(friends_list[i].first) + "/" 
+      + string(friends_list[i].second), value::object(update_property) );
+    //CHECK_EQUAL(status_codes::OK, result.first);
+    update_property.clear();
+
+  }
   
+  message.reply(status_codes::OK);
   return;
 }
 

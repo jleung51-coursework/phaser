@@ -71,8 +71,10 @@ add_executable (
   pushserver
   ../src/PushServer.cpp
   ../src/TableCache.cpp
+  ../src/ClientUtils.cpp
   ../include/TableCache.h
   ../include/make_unique.h
   ../include/ClientUtils.h
+
 )
 target_link_libraries (pushserver ${REST} ${REST_LIBRARIES} ${STORE})
