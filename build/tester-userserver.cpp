@@ -309,6 +309,49 @@ SUITE(USERSERVER_POST) {
 	}
 
 	TEST_FIXTURE(UserFixture, SignOff_BadRequest) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn proper request (setup)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+
+		// No operation name
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// Incorrect operation name
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			"IncorrectOperation" + "/" +
+			userid
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+		// Proper request (cleanup)
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		assert(result.first == status_codes::OK);
 	}
 
 	TEST_FIXTURE(UserFixture, SignOn_IncorrectParameters) {
