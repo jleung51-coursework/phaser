@@ -3,6 +3,9 @@
 
   This server handles post/put/get/delete requests, which interfaces with
   a Microsoft Azure database.
+
+  As defined in ServerUrls.h, the URI for this server is
+  http://localhost:34568.
 */
 
 #include <exception>
@@ -25,13 +28,13 @@
 #include <was/storage_account.h>
 #include <was/table.h>
 
-#include "../include/TableCache.h"
-
 #include "../include/make_unique.h"
+#include "../include/ServerUrls.h"
+#include "../include/ServerUtils.h"
+#include "../include/TableCache.h"
 
 #include "../include/azure_keys.h"
 
-#include "../include/ServerUtils.h"
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
@@ -114,8 +117,6 @@ struct get_request_t {
   string row {};
   unsigned int paths_count {};
 };
-
-constexpr const char* def_url = "http://localhost:34568";
 
 //Unauthorized Options
 const string create_table {"CreateTable"};
@@ -991,7 +992,7 @@ int main (int argc, char const * argv[]) {
   table_cache.init (storage_connection_string);
 
   cout << "Opening listener" << endl;
-  http_listener listener {def_url};
+  http_listener listener {server_urls::basic_server};
   listener.support(methods::GET, &handle_get);
   listener.support(methods::POST, &handle_post);
   listener.support(methods::PUT, &handle_put);

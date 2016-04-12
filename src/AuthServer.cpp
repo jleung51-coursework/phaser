@@ -1,5 +1,8 @@
 /*
  Authorization Server code for CMPT 276, Spring 2016.
+
+ As defined in ServerUrls.h, the URI for this server is
+ http://localhost:34570.
  */
 
 #include <iostream>
@@ -13,8 +16,9 @@
 #include <was/common.h>
 #include <was/table.h>
 
-#include "../include/TableCache.h"
 #include "../include/make_unique.h"
+#include "../include/ServerUrls.h"
+#include "../include/TableCache.h"
 
 #include "../include/azure_keys.h"
 
@@ -55,8 +59,6 @@ using web::json::value;
 using web::http::experimental::listener::http_listener;
 
 using prop_str_vals_t = vector<pair<string,string>>;
-
-constexpr const char* def_url = "http://localhost:34570";
 
 const string auth_table_name {"AuthTable"};
 const string auth_table_userid_partition {"Userid"};
@@ -366,7 +368,7 @@ void handle_get(http_request message) {
     message.reply(result.first, value::object(json_token));
     return;
   }
-  
+
 
   else {
     message.reply(result.first);
@@ -425,7 +427,7 @@ int main (int argc, char const * argv[]) {
   table_cache.init (storage_connection_string);
 
   cout << "AuthServer: Opening listener" << endl;
-  http_listener listener {def_url};
+  http_listener listener {server_urls::auth_server};
   listener.support(methods::GET, &handle_get);
   //listener.support(methods::POST, &handle_post);
   //listener.support(methods::PUT, &handle_put);
