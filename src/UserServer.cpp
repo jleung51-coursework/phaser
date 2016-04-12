@@ -317,7 +317,47 @@ void handle_put (http_request message) {
     message.reply(status_codes::OK);
     return;
   }
-  else if (paths[0] == unfriend) {}
+  else if (paths[0] == unfriend) {
+    // TODO: Check validity of request
+    // Get current friends list
+    result = do_request(
+      methods::GET,
+      string(server_urls::basic_server) + "/" +
+      read_entity_auth_op + "/" +
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row
+      );
+    // TODO: Check status code
+    // Parse Json body
+    unordered_map<string,string> json_body = unpack_json_object(result.second);
+    friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
+    // Remove friend from list
+    friends_list_t new_user_friends;
+    for (int i = 0; i < user_friends.size(); ++i)
+    {
+      if (user_friends[i].first != paths[2] || user_friends[i].second != paths[3])
+      {
+        new_user_friends.push_back(user_friends[i]);
+      }
+    }
+    // Rebuild json body
+    string user_friends_string = friends_list_to_string(new_user_friends);
+    result.second = build_json_value("Friends", user_friends_string);
+    // Put new friends list
+    do_request(
+      methods::PUT,
+      string(server_urls::basic_server) + "/" +
+      update_entity_auth_op + "/" +
+      string(paths[2]) + "/" +
+      string(paths[3]),
+      result.second
+      );
+    // TODO: Check return results
+    message.reply(status_codes::OK);
+    return; 
+  }
   else if (paths[0] == update_status) {}
   else {
     // malformed request
