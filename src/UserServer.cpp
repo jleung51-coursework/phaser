@@ -366,7 +366,29 @@ void handle_put (http_request message) {
     message.reply(status_codes::OK);
     return; 
   }
-  else if (paths[0] == update_status) {}
+  else if (paths[0] == update_status)
+  {
+    result.second = build_json_value("Status", string(paths[2]));
+    // Edit entity
+    result = do_request(
+      methods::PUT,
+      string(server_urls::basic_server) + "/" +
+      update_entity_auth_op + "/" +
+      data_table + "/" +
+      user_partition + "/" +
+      user_row,
+      result.second
+      );
+    // Call Pushserver
+    result = do_request(
+      methods::POST,
+      string(server_urls::push_server) + "/" +
+      push_status + "/" +
+      user_partition + "/" +
+      user_row + "/" +
+      paths[3]
+      );
+  }
   else {
     // malformed request
     vector<value> vec;
