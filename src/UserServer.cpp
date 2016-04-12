@@ -34,7 +34,6 @@
 #include "../include/ClientUtils.h"
 #include "../include/ServerUrls.h"
 #include "../include/ServerUtils.h"
-#include "../include/TableCache.h"
 
 #include "../include/azure_keys.h"
 
@@ -64,7 +63,6 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
-
 using web::http::client::http_client;
 using web::http::http_headers;
 using web::http::http_request;
@@ -283,17 +281,46 @@ void handle_put (http_request message) {
 
 void handle_get (http_request message) {
   string path {uri::decode(message.relative_uri().path())};
-  cout << endl << "**** POST " << path << endl;
+  cout << endl << "**** GET " << path << endl;
   auto paths = uri::split_path(path);
 
-  if(true/*basic criteria*/){}
-  else if (paths[0] == get_friend_list) {}
-  else {
+  if (paths.size() != 2) {
     // malformed request
-    vector<value> vec;
-    message.reply(status_codes::BadRequest, value::array(vec));
+    message.reply(status_codes::BadRequest);
     return;
   }
+  else if (paths[0] != get_friend_list) {
+    // malformed request
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+
+  const string userid = paths[1]; // obtains userid (parameter)
+
+  // user not signed in -- The auth server does not return a token and the expected record doesn't exist in DataTable
+  auto found = sessions.find(userid);
+  if(found == sessions.end()) {
+    message.reply(status_codes::Forbidden);
+    return;
+  }
+  const string table = "DataTable";
+  const string operation = "ReadEntityAuth";
+  const string token = std::get<0>(found->second);
+  const string partition = std::get<1>(found->second);
+  const string row = std::get<2>(found->second);
+
+  pair<status_code,value> result = do_request (methods::GET,
+                                               def_url + operation + "/" + table + "/" + token + "/" + partition + "/" + row );
+
+  unordered_map<string,string> json_body = unpack_json_object(result.second);
+  friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
+  vector<value> vec;
+  string user_friends_string = friends_list_to_string(user_friends);
+  result.second = build_json_value("Friends", user_friends_string);
+  vec.push_back(result.second);
+
+  message.reply(status_codes::OK, value::array(vec));
+  return;
 }
 
 
