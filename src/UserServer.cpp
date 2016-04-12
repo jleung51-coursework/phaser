@@ -16,11 +16,11 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <cpprest/http_listener.h>
-#include <cpprest/json.h>
 #include <string>
 
 #include <cpprest/base_uri.h>
+#include <cpprest/http_listener.h>
+#include <cpprest/json.h>
 
 #include <pplx/pplxtasks.h>
 
@@ -30,14 +30,11 @@
 
 #include "../include/TableCache.h"
 
+#include "../include/ClientUtils.h"
+
 #include "../include/azure_keys.h"
 
 #include "../include/ServerUtils.h"
-
-#include "../include/UserUtils.h"
-
-// Do we need to?
-  
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
@@ -64,10 +61,13 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
-
+using web::http::client::http_client;
 using web::http::http_headers;
 using web::http::http_request;
+using web::http::http_response;
+using web::http::method;
 using web::http::methods;
+using web::http::status_code;
 using web::http::status_codes;
 using web::http::uri;
 
@@ -77,7 +77,11 @@ using web::http::experimental::listener::http_listener;
 
 using prop_vals_t = vector<pair<string,value>>;
 
+constexpr const char* auth_url = "http://localhost:34570";
 constexpr const char* def_url = "http://localhost:34572";
+
+const string get_update_data_op {"GetUpdateData"};
+const string update_entity_auth_op {"UpdateEntityAuth"};
 
 const string sign_on {"SignOn"}; //POST
 const string sign_off {"SignOff"}; //POST
@@ -88,18 +92,65 @@ const string update_status {"UpdateStatus"}; //PUT
 
 const string get_friend_list {"ReadFriendList"}; //GET
 
-bool check_active (string userid){
-  bool active = true;
+// Cache of active sessions
+std::unordered_map< string, std::tuple<string, string, string> > sessions;
 
-  if(true /*token DNE*/) {
-    active = false;
+/*
+  Return true if an HTTP request has a JSON body
+
+  This routine can be called multiple times on the same message.
+ */
+bool has_json_body (http_request message) {
+  return message.headers()["Content-type"] == "application/json";
+}
+
+/*
+  Given an HTTP message with a JSON body, return the JSON
+  body as an unordered map of strings to strings.
+  get_json_body and get_json_bourne are valid and identical function calls.
+
+  If the message has no JSON body, return an empty map.
+
+  THIS ROUTINE CAN ONLY BE CALLED ONCE FOR A GIVEN MESSAGE
+  (see http://microsoft.github.io/cpprestsdk/classweb_1_1http_1_1http__request.html#ae6c3d7532fe943de75dcc0445456cbc7
+  for source of this limit).
+
+  Note that all types of JSON values are returned as strings.
+  Use C++ conversion utilities to convert to numbers or dates
+  as necessary.
+ */
+unordered_map<string,string> get_json_body(http_request message) {
+  unordered_map<string,string> results {};
+  const http_headers& headers {message.headers()};
+  auto content_type (headers.find("Content-Type"));
+  if (content_type == headers.end() ||
+      content_type->second != "application/json")
+    return results;
+
+  value json{};
+  message.extract_json(true)
+    .then([&json](value v) -> bool
+          {
+            json = v;
+            return true;
+          })
+    .wait();
+
+  if (json.is_object()) {
+    for (const auto& v : json.as_object()) {
+      if (v.second.is_string()) {
+        results[v.first] = v.second.as_string();
+      }
+      else {
+        results[v.first] = v.second.serialize();
+      }
+    }
   }
+  return results;
+}
 
-  if(true /*entry DNE*/) {
-    active = false;
-  }
-
-  return active;
+unordered_map<string,string> get_json_bourne(http_request message) {
+ return get_json_body(message);
 }
 
 void handle_post (http_request message){
@@ -107,13 +158,107 @@ void handle_post (http_request message){
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
 
-  if(true/*basic criteria*/){}
-  else if (paths[0] == sign_on) {}
-  else if (paths[0] == sign_off) {}
+  // Operation name and user ID
+  if(paths.size() < 2) {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  else if(paths[0] != sign_on && paths[0] != sign_off) {
+    message.reply(status_codes::BadRequest);
+  }
+
+  const string operation = paths[0];
+  const string userid = paths[1];
+
+  if(operation == sign_on) {
+    if(!has_json_body(message)) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+
+    unordered_map<string, string> json_body {get_json_bourne(message)};
+    if(json_body.size() != 1) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+
+    unordered_map<string, string>::const_iterator json_body_password_iterator {json_body.find("Password")};
+    // No 'Password' property
+    if(json_body_password_iterator == json_body.end()) {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+
+    vector<pair<string, value>> json_pw;
+    json_pw.push_back(make_pair(
+        json_body_password_iterator->first,
+        value::string(json_body_password_iterator->second)
+    ));
+
+    pair<status_code, value> result;
+    result = do_request(
+      methods::GET,
+      string(auth_url) + "/" +
+      get_update_data_op + "/" +
+      userid,
+      value::object(json_pw)
+    );
+    if(result.first != status_codes::OK) {
+      message.reply(result.first);
+      return;
+    }
+    else if(result.second.size() != 3) {
+      message.reply(status_codes::InternalError);
+      return;
+    }
+
+    const string token = get_json_object_prop(
+      result.second,
+      "token"
+    );
+    const string data_partition = get_json_object_prop(
+      result.second,
+      "DataPartition"
+    );
+    const string data_row = get_json_object_prop(
+      result.second,
+      "DataRow"
+    );
+    if(token.empty() ||
+       data_partition.empty() ||
+       data_row.empty() ) {
+      message.reply(status_codes::InternalError);
+      return;
+    }
+
+    std::tuple<string, string, string> tuple_insert(
+      token,
+      data_partition,
+      data_row);
+    std::pair<string, std::tuple<string, string, string>> pair_insert(
+      userid,
+      tuple_insert
+    );
+    sessions.insert(pair_insert);
+
+    message.reply(status_codes::OK);
+    return;
+  }
+
+  else if(operation == sign_off) {
+    auto session = sessions.find(userid);
+    if(session == sessions.end()) {
+      message.reply(status_codes::NotFound);
+      return;
+    }
+
+    sessions.erase(session);
+    message.reply(status_codes::OK);
+    return;
+  }
+
   else {
-    // malformed request
-    vector<value> vec;
-    message.reply(status_codes::BadRequest, value::array(vec));
+    message.reply(status_codes::InternalError);
     return;
   }
 }
@@ -139,25 +284,37 @@ void handle_get (http_request message) {
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
-  vector<value> vec;
 
   if (paths.size() != 2 || paths[0] != get_friend_list) {
     // malformed request
-    message.reply(status_codes::BadRequest, value::array(vec));
+    message.reply(status_codes::BadRequest);
     return;
   }
 
   const string userid = paths[1]; // obtains userid (parameter)
 
   // user not signed in -- The auth server does not return a token and the expected record doesn't exist in DataTable
-  bool active = check_active(userid);
-
-  if(!active) {
-    message.reply(status_codes::Forbidden, value::array(vec));
+  auto found = sessions.find(userid);
+  if(found == sessions.end()) {
+    message.reply(status_codes::Forbidden);
     return;
   }
-  else{ // if user is active
-    // reads friends and parse 
+  else { // if user is active  
+    const string table = "DataTable";
+    const string operation = "ReadEntityAuth"; 
+    const string token = std::get<0>(found->second);
+    const string partition = std::get<1>(found->second);
+    const string row = std::get<2>(found->second);
+
+    pair<status_code,value> result = do_request (methods::GET,
+                                                 def_url + operation + "/" + table + "/" + token + "/" + partition + "/" + row );
+    
+    unordered_map<string,string> json_body = unpack_json_object(result.second);
+    friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
+    vector<value> vec;
+    string user_friends_string = friends_list_to_string(user_friends);
+    result.second = build_json_value("Friends", user_friends_string);
+    vec.push_back(result.second);
 
     message.reply(status_codes::OK, value::array(vec));
     return;

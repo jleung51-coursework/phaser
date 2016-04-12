@@ -28,17 +28,51 @@ include_directories(${Casablanca_DIR}/Release/include)
 include_directories(${Store_DIR}/Microsoft.WindowsAzure.Storage/includes)
 
 add_executable (
+  tester
+  tester-utils.cpp
+  tester-utils.h
+  tester-basicserver.cpp
+  tester-authserver.cpp
+  tester-userserver.cpp
+  tester-pushserver.cpp
+  testmain.cpp
+)
+target_link_libraries (tester ${REST} ${REST_LIBRARIES} ${STORE} ${TEST})
+
+add_executable (
   basicserver
   ../src/BasicServer.cpp
   ../src/ServerUtils.cpp
   ../include/ServerUtils.h
   ../src/TableCache.cpp
   ../include/TableCache.h
+  ../include/make_unique.h
 )
 target_link_libraries (basicserver ${REST} ${REST_LIBRARIES} ${STORE})
 
-add_executable (tester tester-basicserver.cpp testmain.cpp)
-target_link_libraries (tester ${REST} ${REST_LIBRARIES} ${STORE} ${TEST})
-
-add_executable (authserver ../src/AuthServer.cpp ../src/TableCache.cpp ../include/TableCache.h)
+add_executable (
+  authserver
+  ../src/AuthServer.cpp
+  ../src/TableCache.cpp
+  ../include/TableCache.h
+  ../include/make_unique.h
+)
 target_link_libraries (authserver ${REST} ${REST_LIBRARIES} ${STORE})
+
+add_executable (
+  userserver
+  ../src/UserServer.cpp
+  ../src/ClientUtils.cpp
+  ../include/make_unique.h
+  ../include/ClientUtils.h
+)
+target_link_libraries (userserver ${REST} ${REST_LIBRARIES} ${STORE})
+
+add_executable (
+  pushserver
+  ../src/PushServer.cpp
+  ../src/ClientUtils.cpp
+  ../include/make_unique.h
+  ../include/ClientUtils.h
+)
+target_link_libraries (pushserver ${REST} ${REST_LIBRARIES} ${STORE})
