@@ -356,8 +356,10 @@ void handle_put (http_request message) {
       methods::PUT,
       string(server_urls::basic_server) + "/" +
       update_entity_auth_op + "/" +
-      string(paths[2]) + "/" +
-      string(paths[3]),
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row,
       result.second
       );
     // TODO: Check return results
