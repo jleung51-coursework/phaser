@@ -200,6 +200,9 @@ SUITE(USERSERVER_POST) {
 		password_json.clear();
 	}
 
+	TEST_FIXTURE(UserFixture, SignOff_ExtraJSON) {
+	}
+
 	TEST_FIXTURE(UserFixture, SignOn_BadRequest) {
 		vector<pair<string, value>> password_json;
 		pair<status_code, value> result;
@@ -305,6 +308,9 @@ SUITE(USERSERVER_POST) {
 		password_json.clear();
 	}
 
+	TEST_FIXTURE(UserFixture, SignOff_BadRequest) {
+	}
+
 	TEST_FIXTURE(UserFixture, SignOn_IncorrectParameters) {
 		vector<pair<string, value>> password_json;
 		pair<status_code, value> result;
@@ -338,5 +344,11 @@ SUITE(USERSERVER_POST) {
 		);
 		CHECK_EQUAL(status_codes::NotFound, result.first);
 		password_json.clear();
+	}
+
+	TEST_FIXTURE(UserFixture, SignOff_IncorrectParameters) {
+	}
+
+	TEST_FIXTURE(UserFixture, SignOffTwice) {
 	}
 }
