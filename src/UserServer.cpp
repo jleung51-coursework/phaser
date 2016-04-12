@@ -275,8 +275,44 @@ void handle_put (http_request message) {
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
 
+
+
+  pair<status_code, value> result;
+  string user_id {paths[1]};
+  string user_token {get<0>(sessions[user_id])};
+  string user_partition {get<1>(sessions[user_id])};
+  string user_row {get<2>(sessions[user_id])};
   if(true/*basic criteria*/){}
-  else if (paths[0] == add_friend) {}
+  else if (paths[0] == add_friend) {
+    // Get current friends list
+    result = do_request(
+      methods::GET,
+      string(server_urls::basic_server) + "/" +
+      read_entity_auth_op + "/" +
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row
+      );
+    //Check status code
+    //Parse JSON body
+    unordered_map<string,string> json_body = unpack_json_object(result.second);
+    friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
+    // Add new friend to list
+    user_friends.push_back(make_pair(paths[2],paths[3]));
+    string user_friends_string = friends_list_to_string(user_friends);
+    result.second = build_json_value("Friends", user_friends_string);
+    // Put new friends list
+    do_request(
+      methods::PUT,
+      string(server_urls::basic_server) + "/" +
+      update_entity_auth_op + "/" +
+      string(paths[2]) + "/" +
+      string(paths[3]),
+      result.second
+      );
+    return;
+  }
   else if (paths[0] == unfriend) {}
   else if (paths[0] == update_status) {}
   else {
