@@ -82,7 +82,12 @@ using web::http::experimental::listener::http_listener;
 using prop_vals_t = vector<pair<string,value>>;
 
 const string get_update_data_op {"GetUpdateData"};
+
+const string read_entity_auth_op {"ReadEntityAuth"};
 const string update_entity_auth_op {"UpdateEntityAuth"};
+
+const string auth_table_partition {"Userid"};
+const string data_table {"DataTable"};
 
 const string sign_on {"SignOn"}; //POST
 const string sign_off {"SignOff"}; //POST
