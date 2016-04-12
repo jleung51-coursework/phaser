@@ -487,6 +487,42 @@ SUITE(USERSERVER_POST) {
 		assert(result.first == status_codes::OK);
 	}
 
-	TEST_FIXTURE(UserFixture, SignOffTwice) {
+	TEST_FIXTURE(UserFixture, SignOff_Twice) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn
+		// Proper request
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+		password_json.clear();
+
+		// Proper SignOff request
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		assert(result.first == status_codes::OK);
+
+		// Repeated proper SignOff request
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::NotFound, result.first);
 	}
 }
