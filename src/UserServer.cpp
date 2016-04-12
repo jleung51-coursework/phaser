@@ -276,16 +276,30 @@ void handle_put (http_request message) {
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
 
-
-
-  pair<status_code, value> result;
+  if (paths.size() != 2 || paths.size() != 4)
+  {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
   string user_id {paths[1]};
+  if (sessions[user_id] == sessions["empty value"])
+  {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  pair<status_code, value> result;
   string user_token {get<0>(sessions[user_id])};
   string user_partition {get<1>(sessions[user_id])};
   string user_row {get<2>(sessions[user_id])};
-  if(true/*basic criteria*/){}
-  else if (paths[0] == add_friend) {
+
+  if (paths[0] == add_friend) {
     // TODO: Check validity of the request
+      // Invalid path size
+    if (paths.size() != 4)
+    {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
     // Get current friends list
     result = do_request(
       methods::GET,
@@ -325,6 +339,11 @@ void handle_put (http_request message) {
    */
   else if (paths[0] == unfriend) {
     // TODO: Check validity of request
+    if (paths.size() != 4)
+    {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
     // Get current friends list
     result = do_request(
       methods::GET,
@@ -368,6 +387,12 @@ void handle_put (http_request message) {
   }
   else if (paths[0] == update_status)
   {
+    // Check validity of request
+    if (paths.size() != 3)
+    {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
     result.second = build_json_value("Status", string(paths[2]));
     // Edit entity
     result = do_request(
