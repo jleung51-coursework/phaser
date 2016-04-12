@@ -100,7 +100,7 @@ const string update_status {"UpdateStatus"}; //PUT
 const string get_friend_list {"ReadFriendList"}; //GET
 
 // Cache of active sessions
-std::unordered_map< string, std::tuple<string, string, string> > sessions;
+std::unordered_map< string, std::tuple<string/*token*/, string/*partition*/, string/*row*/> > sessions;
 
 /*
   Return true if an HTTP request has a JSON body
