@@ -313,7 +313,8 @@ void handle_put (http_request message) {
       string(paths[3]),
       result.second
       );
-    message.reply(status::codes::OK);
+    // TODO: Check return results
+    message.reply(status_codes::OK);
     return;
   }
   else if (paths[0] == unfriend) {}
