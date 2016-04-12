@@ -50,26 +50,26 @@ public:
   static constexpr const char* userid_0 {"user_0"};
   static constexpr const char* row_0 {"0,Ben"};
 
-  static constexpr const char* friends_val_0 {"1,Ben|2,Ben"};
-  static constexpr const char* status_val_0 {"A status update which is 47 characters long by 0"};
+  static constexpr const char* friends_val_0 {"USA;1,Ben|USA;2,Ben"};
+  static constexpr const char* status_val_0 {"A_status_update_which_is_47_characters_long_by_0"};
   static constexpr const char* status_update_0 {"A_status_update_which_is_52_characters_long_by_0"};
 
   // User Entity 1  
   static constexpr const char* userid_1 {"user_1"};
   static constexpr const char* row_1 {"1,Ben"};
 
-  static constexpr const char* friends_val_1 {"0,Ben|2,Ben"};
-  static constexpr const char* status_val_1 {"A status update which is 47 characters long by 1"};
-  static constexpr const char* status_update_1 {"A status update which is 52 characters long by 1"};
+  static constexpr const char* friends_val_1 {"USA;0,Ben|USA;2,Ben"};
+  static constexpr const char* status_val_1 {"A_status_update_which_is_47_characters_long_by_1"};
+  static constexpr const char* status_update_1 {"A_status_update_which_is_52_characters_long_by_1"};
 
   // User Entity 2  
   static constexpr const char* userid_2 {"user_2"};
   static constexpr const char* row_2 {"2,Ben"};
 
-  static constexpr const char* friends_val_2 {"0,Ben|1,Ben"};
-  static constexpr const char* status_val_2 {"A status update which is 47 characters long by 2"};
-  static constexpr const char* status_update_2 {"A status update which is 52 characters long by 2"};
-
+  static constexpr const char* friends_val_2 {"USA;0,Ben|USA;1,Ben"};
+  static constexpr const char* status_val_2 {"A_status_update_which_is_47_characters_long_by_2"};
+  static constexpr const char* status_update_2 {"A_status_update_which_is_52_characters_long_by_2"};
+  
   // Constants for initializing tests
   // Represents a user's credentials
   static constexpr const char* addr {"http://localhost:34568/"};
@@ -330,7 +330,7 @@ SUITE(PUSH_SERVER){
     string update_val { get_json_object_prop( result.second, "Updates")};
     cout << string( << endl;
 */
-
+/*
     friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)
@@ -353,7 +353,7 @@ SUITE(PUSH_SERVER){
     CHECK_EQUAL(status_codes::OK, result.first);
 
     //string new_updates_val {};
-
+*/
   
     //no Push Status -- Bad Request
     friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
@@ -432,6 +432,27 @@ SUITE(PUSH_SERVER){
                   + PushFixture::status_update_0);
     CHECK_EQUAL(status_codes::BadRequest, result.first);
 
+
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  //+ PushFixture::table + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    friends_list.clear();
+
+    //get updated status -- should be different
+    result = do_request( methods::GET, 
+      string(PushFixture::addr) 
+                  + "ReadEntityAdmin/" 
+                  + PushFixture::table + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0);
+    CHECK_EQUAL(status_codes::OK, result.first);
 
 
   } // bracket for testfixture

@@ -77,6 +77,8 @@ using web::http::experimental::listener::http_listener;
 //using prop_vals_t = vector<pair<string,value>>;
 using friends_list_t = std::vector<std::pair<std::string,std::string>>;
 
+
+constexpr const char* basic_url = "http://localhost:34568";
 constexpr const char* def_url = "http://localhost:34574";
 
 const string push_status_op {"PushStatus"};
@@ -174,7 +176,7 @@ void handle_post (http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-
+  cout << "check good 1"<< endl;
   unordered_map<string, string> json_body {get_json_bourne(message)};
   unordered_map<string, string>::const_iterator json_body_friends_iterator
     {json_body.find("Friends")};
@@ -189,27 +191,30 @@ void handle_post (http_request message) {
     return;
   }
 
-  string friends_list_unparsed {json_body_friends_iterator->second};
-  friends_list_t friends_list { parse_friends_list(friends_list_unparsed) };
+cout << "check good 2" << endl;
+  if ( json_body_friends_iterator->second.empty() ){
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  vector<pair<string,string>> friends_list { parse_friends_list(json_body_friends_iterator->second) };
   string old_updates;
   string new_updates;
   pair<status_code,value> result;
   vector<pair<string,value>> update_property;
+  cout << "check check " << endl;
   
   for ( int i = 0; i < friends_list.size(); i++ ){
+    cout << "in loop friend # " << i << endl;
     // get properties of entity
-    result = do_request(methods::GET, def_url 
+    result = do_request(methods::GET, basic_url 
       + data_table_name + "/" 
       + read_entity_admin + "/" 
       + string(friends_list[i].first) + "/" 
       + string(friends_list[i].second) );
+    cout << "check after get " << endl;
     //CHECK_EQUAL(status_codes::OK, result.first);
     //get old updates
     old_updates = get_json_object_prop(result.second, "Updates");
-    if (old_updates == ""){
-      message.reply(status_codes::InternalError);
-        return;
-    }
     cout << "Old Statuses: " << old_updates << endl;
     //add new update
     new_updates = string(paths[3]) + old_updates;
@@ -225,6 +230,7 @@ void handle_post (http_request message) {
     cout << "Updated Statuses: " << new_updates << endl;
   }
   
+  cout << "check good 3" << endl;
   message.reply(status_codes::OK);
   return;
 }
