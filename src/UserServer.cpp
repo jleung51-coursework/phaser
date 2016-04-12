@@ -284,7 +284,7 @@ void handle_put (http_request message) {
   string user_id {paths[1]};
   if (sessions[user_id] == sessions["empty value"])
   {
-    message.reply(status_codes::BadRequest);
+    message.reply(status_codes::Forbidden);
     return;
   }
   pair<status_code, value> result;
@@ -310,6 +310,11 @@ void handle_put (http_request message) {
       user_partition + "/" +
       user_row
       );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
     // TODO: Check status code
     // Parse JSON body
     unordered_map<string,string> json_body = unpack_json_object(result.second);
@@ -320,7 +325,7 @@ void handle_put (http_request message) {
     string user_friends_string = friends_list_to_string(user_friends);
     result.second = build_json_value("Friends", user_friends_string);
     // Put new friends list
-    do_request(
+    result = do_request(
       methods::PUT,
       string(server_urls::basic_server) + "/" +
       update_entity_auth_op + "/" +
@@ -330,6 +335,11 @@ void handle_put (http_request message) {
       user_row,
       result.second
       );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
     // TODO: Check return results
     message.reply(status_codes::OK);
     return;
@@ -354,6 +364,11 @@ void handle_put (http_request message) {
       user_partition + "/" +
       user_row
       );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
     // TODO: Check status code
     // Parse Json body
     unordered_map<string,string> json_body = unpack_json_object(result.second);
@@ -371,7 +386,7 @@ void handle_put (http_request message) {
     string user_friends_string = friends_list_to_string(new_user_friends);
     result.second = build_json_value("Friends", user_friends_string);
     // Put new friends list
-    do_request(
+    result = do_request(
       methods::PUT,
       string(server_urls::basic_server) + "/" +
       update_entity_auth_op + "/" +
@@ -381,6 +396,11 @@ void handle_put (http_request message) {
       user_row,
       result.second
       );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
     // TODO: Check return results
     message.reply(status_codes::OK);
     return; 
@@ -404,6 +424,11 @@ void handle_put (http_request message) {
       user_row,
       result.second
       );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
     // Call Pushserver
     result = do_request(
       methods::POST,
@@ -413,6 +438,11 @@ void handle_put (http_request message) {
       user_row + "/" +
       paths[3]
       );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
   }
   else {
     // malformed request
