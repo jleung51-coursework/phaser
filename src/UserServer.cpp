@@ -16,11 +16,11 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
+#include <cpprest/http_listener.h>
+#include <cpprest/json.h>
 #include <string>
 
 #include <cpprest/base_uri.h>
-#include <cpprest/http_listener.h>
-#include <cpprest/json.h>
 
 #include <pplx/pplxtasks.h>
 
@@ -35,6 +35,9 @@
 #include "../include/ServerUtils.h"
 
 #include "../include/UserUtils.h"
+
+// Do we need to?
+  
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
@@ -97,7 +100,6 @@ bool check_active (string userid){
   }
 
   return active;
-
 }
 
 void handle_post (http_request message){
@@ -139,7 +141,7 @@ void handle_get (http_request message) {
   auto paths = uri::split_path(path);
   vector<value> vec;
 
-  if (paths.size() < 2 || paths[0] != get_friend_list) {
+  if (paths.size() != 2 || paths[0] != get_friend_list) {
     // malformed request
     message.reply(status_codes::BadRequest, value::array(vec));
     return;
