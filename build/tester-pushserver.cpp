@@ -315,52 +315,12 @@ SUITE(PUSH_SERVER){
   TEST_FIXTURE(PushFixture, PushStatus) {
     pair<status_code,value> result;
     vector<pair<string, value>> friends_list;
-    
-    //returns OK
-
-    /*//SEE OLD Status
-    result = do_request( methods::GET, 
-      string(PushFixture::addr) 
-                  + "ReadEntityAdmin/" 
-                  + PushFixture::table 
-                  + PushFixture::partition 
-                  + PushFixture::row_0);
-    CHECK_EQUAL(status_codes::OK, result.first);
-
-    string update_val { get_json_object_prop( result.second, "Updates")};
-    cout << string( << endl;
-*/
-/*
-    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
-    result = do_request (methods::POST,
-                  string(PushFixture::push_addr)
-                  + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
-                  + PushFixture::partition + "/"
-                  + PushFixture::row_0 + "/"
-                  + PushFixture::status_update_0,
-                  value::object(friends_list) );
-    CHECK_EQUAL(status_codes::OK, result.first);
-    friends_list.clear();
-
-    //get updated status -- should be different
-    result = do_request( methods::GET, 
-      string(PushFixture::addr) 
-                  + "ReadEntityAdmin/" 
-                  + PushFixture::table + "/"
-                  + PushFixture::partition + "/"
-                  + PushFixture::row_0);
-    CHECK_EQUAL(status_codes::OK, result.first);
-
-    //string new_updates_val {};
-*/
   
     //no Push Status -- Bad Request
     friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)                  
                   + "NotPushStatus" + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   + PushFixture::row_0 + "/"
                   + PushFixture::status_update_0,
@@ -373,7 +333,6 @@ SUITE(PUSH_SERVER){
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)
                   + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   + PushFixture::row_0 + "/"
                   + PushFixture::status_update_0,
@@ -387,7 +346,6 @@ SUITE(PUSH_SERVER){
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)                  
                   + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   + PushFixture::row_0 + "/"
                   + PushFixture::status_update_0,
@@ -400,7 +358,6 @@ SUITE(PUSH_SERVER){
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)
                   + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   //+ PushFixture::row_0 + "/"
                   + PushFixture::status_update_0,
@@ -413,7 +370,6 @@ SUITE(PUSH_SERVER){
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)
                   + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   + PushFixture::row_0 + "/"
                   + PushFixture::row_0 + "/"
@@ -426,7 +382,6 @@ SUITE(PUSH_SERVER){
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)
                   + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   + PushFixture::row_0 + "/"
                   + PushFixture::status_update_0);
@@ -437,10 +392,20 @@ SUITE(PUSH_SERVER){
     result = do_request (methods::POST,
                   string(PushFixture::push_addr)
                   + PushFixture::push_status_op + "/"
-                  //+ PushFixture::table + "/"
                   + PushFixture::partition + "/"
                   + PushFixture::row_0 + "/"
                   + PushFixture::status_update_0,
+                  value::object(friends_list) );
+    CHECK_EQUAL(status_codes::OK, result.first);
+    friends_list.clear();
+
+    friends_list.push_back( make_pair(string(friends), value::string(friends_val_0) ) );
+    result = do_request (methods::POST,
+                  string(PushFixture::push_addr)
+                  + PushFixture::push_status_op + "/"
+                  + PushFixture::partition + "/"
+                  + PushFixture::row_0 + "/"
+                  + PushFixture::status_update_1,
                   value::object(friends_list) );
     CHECK_EQUAL(status_codes::OK, result.first);
     friends_list.clear();

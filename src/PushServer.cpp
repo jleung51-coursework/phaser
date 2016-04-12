@@ -78,8 +78,8 @@ using web::http::experimental::listener::http_listener;
 using friends_list_t = std::vector<std::pair<std::string,std::string>>;
 
 
-constexpr const char* basic_url = "http://localhost:34568";
-constexpr const char* def_url = "http://localhost:34574";
+constexpr const char* basic_url = "http://localhost:34568/";
+constexpr const char* def_url = "http://localhost:34574/";
 
 const string push_status_op {"PushStatus"};
 const string read_entity_admin {"ReadEntityAdmin"};
@@ -176,7 +176,6 @@ void handle_post (http_request message) {
     message.reply(status_codes::BadRequest);
     return;
   }
-  cout << "check good 1"<< endl;
   unordered_map<string, string> json_body {get_json_bourne(message)};
   unordered_map<string, string>::const_iterator json_body_friends_iterator
     {json_body.find("Friends")};
@@ -191,7 +190,6 @@ void handle_post (http_request message) {
     return;
   }
 
-cout << "check good 2" << endl;
   if ( json_body_friends_iterator->second.empty() ){
     message.reply(status_codes::BadRequest);
     return;
@@ -201,7 +199,6 @@ cout << "check good 2" << endl;
   string new_updates;
   pair<status_code,value> result;
   vector<pair<string,value>> update_property;
-  cout << "check check " << endl;
   
   for ( int i = 0; i < friends_list.size(); i++ ){
     cout << "in loop friend # " << i << endl;
@@ -211,26 +208,25 @@ cout << "check good 2" << endl;
       + read_entity_admin + "/" 
       + string(friends_list[i].first) + "/" 
       + string(friends_list[i].second) );
-    cout << "check after get " << endl;
-    //CHECK_EQUAL(status_codes::OK, result.first);
     //get old updates
+    
     old_updates = get_json_object_prop(result.second, "Updates");
     cout << "Old Statuses: " << old_updates << endl;
+    
     //add new update
-    new_updates = string(paths[3]) + old_updates;
+    new_updates = string(paths[3]) + "\n" + old_updates;
     update_property.push_back( make_pair("Updates", value::string(new_updates) ) );
     //update property of friend
-    result = do_request(methods::PUT, def_url 
+    result = do_request(methods::PUT, basic_url 
       + data_table_name + "/" 
       + update_entity_admin + "/" 
       + string(friends_list[i].first) + "/" 
       + string(friends_list[i].second), value::object(update_property) );
-    //CHECK_EQUAL(status_codes::OK, result.first);
+    
     update_property.clear();
     cout << "Updated Statuses: " << new_updates << endl;
   }
   
-  cout << "check good 3" << endl;
   message.reply(status_codes::OK);
   return;
 }
