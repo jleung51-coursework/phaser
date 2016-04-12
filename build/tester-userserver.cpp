@@ -450,6 +450,41 @@ SUITE(USERSERVER_POST) {
 	}
 
 	TEST_FIXTURE(UserFixture, SignOff_IncorrectParameters) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn proper request (setup)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+		password_json.clear();
+
+		// Incorrect userid
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			"IncorrectUserid"
+		);
+		CHECK_EQUAL(status_codes::NotFound, result.first);
+
+		// Proper request (cleanup)
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		assert(result.first == status_codes::OK);
 	}
 
 	TEST_FIXTURE(UserFixture, SignOffTwice) {
