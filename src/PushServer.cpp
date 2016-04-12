@@ -35,8 +35,6 @@
 #include "../include/ServerUrls.h"
 #include "../include/ServerUtils.h"
 
-//#include "../include/azure_keys.h"
-
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
 using azure::storage::storage_exception;
@@ -74,7 +72,6 @@ using web::json::value;
 
 using web::http::experimental::listener::http_listener;
 
-//using prop_vals_t = vector<pair<string,value>>;
 using friends_list_t = std::vector<std::pair<std::string,std::string>>;
 
 constexpr const char* basic_url = "http://localhost:34568/";
@@ -150,9 +147,6 @@ unordered_map<string,string> get_json_bourne(http_request message) {
 //---------------------------------------------------------------------------------------
 
 void handle_post (http_request message) {
-  //TODO Not implemented yet!
-  //message.reply(status_codes::NotImplemented);
-
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
@@ -229,6 +223,8 @@ void handle_post (http_request message) {
 }
 
 int main (int argc, char const * argv[]) {
+  cout << "Parsing connection string" << endl;
+
   cout << "Opening listener" << endl;
   http_listener listener {server_urls::push_server};
   listener.support(methods::POST, &handle_post); // Push a status update to friends
