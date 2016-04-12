@@ -229,6 +229,38 @@ SUITE(USERSERVER_POST) {
 	}
 
 	TEST_FIXTURE(UserFixture, SignOff_ExtraJSON) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn proper request (setup)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+		password_json.clear();
+
+		// SignOff
+		// Extra JSON body
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
 	}
 
 	TEST_FIXTURE(UserFixture, SignOn_BadRequest) {
