@@ -32,8 +32,6 @@
 
 #include "../include/make_unique.h"
 
-//#include "../include/azure_keys.h"
-
 #include "../include/ServerUtils.h"
 #include "../include/ClientUtils.h"
 
@@ -74,7 +72,6 @@ using web::json::value;
 
 using web::http::experimental::listener::http_listener;
 
-//using prop_vals_t = vector<pair<string,value>>;
 using friends_list_t = std::vector<std::pair<std::string,std::string>>;
 
 
@@ -86,9 +83,6 @@ const string read_entity_admin {"ReadEntityAdmin"};
 const string update_entity_admin {"UpdateEntityAdmin"};
 
 const string data_table_name {"DataTable"};
-
-//TableCache table_cache {};
-
 
 //---------------------------------------------------------------------------------------
 
@@ -154,9 +148,6 @@ unordered_map<string,string> get_json_bourne(http_request message) {
 //---------------------------------------------------------------------------------------
 
 void handle_post (http_request message) {
-  //TODO Not implemented yet!
-  //message.reply(status_codes::NotImplemented);
-  
   string path {uri::decode(message.relative_uri().path())};
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
@@ -234,7 +225,6 @@ void handle_post (http_request message) {
 
 int main (int argc, char const * argv[]) {
   cout << "Parsing connection string" << endl;
-  //table_cache.init (storage_connection_string);
 
   cout << "Opening listener" << endl;
   http_listener listener {def_url};
