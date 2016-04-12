@@ -160,14 +160,16 @@ void handle_post (http_request message) {
   auto paths = uri::split_path(path);
 
   // need operation name, country, username, status = 4
-  if (paths.size() < 4) {
+  if (paths.size() != 4 ) {
     message.reply(status_codes::BadRequest);
     return;
   }
+  //no PushStatus included
   else if(paths[0] != push_status_op) {
     message.reply(status_codes::BadRequest);
     return;
   }
+  // no friends body included
   else if(!has_json_body(message)) {
     message.reply(status_codes::BadRequest);
     return;
@@ -176,7 +178,7 @@ void handle_post (http_request message) {
   unordered_map<string, string> json_body {get_json_bourne(message)};
   unordered_map<string, string>::const_iterator json_body_friends_iterator
     {json_body.find("Friends")};
-  
+  //no properties or more than one property
   if(json_body.size() != 1) {
     message.reply(status_codes::BadRequest);
     return;
@@ -193,8 +195,7 @@ void handle_post (http_request message) {
   string new_updates;
   pair<status_code,value> result;
   vector<pair<string,value>> update_property;
-  //update_property.push_back( make_pair ("Updates", value::string("*") ) );
-
+  
   for ( int i = 0; i < friends_list.size(); i++ ){
     // get properties of entity
     result = do_request(methods::GET, def_url 
