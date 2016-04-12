@@ -284,6 +284,7 @@ void handle_put (http_request message) {
   string user_row {get<2>(sessions[user_id])};
   if(true/*basic criteria*/){}
   else if (paths[0] == add_friend) {
+    // TODO: Check validity of the request
     // Get current friends list
     result = do_request(
       methods::GET,
@@ -294,12 +295,13 @@ void handle_put (http_request message) {
       user_partition + "/" +
       user_row
       );
-    //Check status code
-    //Parse JSON body
+    // TODO: Check status code
+    // Parse JSON body
     unordered_map<string,string> json_body = unpack_json_object(result.second);
     friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
     // Add new friend to list
     user_friends.push_back(make_pair(paths[2],paths[3]));
+    // Rebuild json body
     string user_friends_string = friends_list_to_string(user_friends);
     result.second = build_json_value("Friends", user_friends_string);
     // Put new friends list
