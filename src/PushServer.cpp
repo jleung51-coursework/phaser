@@ -204,10 +204,11 @@ void handle_post (http_request message) {
     cout << "in loop friend # " << i << endl;
     // get properties of entity
     result = do_request(methods::GET, basic_url 
-      + data_table_name + "/" 
       + read_entity_admin + "/" 
+      + data_table_name + "/" 
       + string(friends_list[i].first) + "/" 
       + string(friends_list[i].second) );
+
     //get old updates
     
     old_updates = get_json_object_prop(result.second, "Updates");
@@ -218,8 +219,8 @@ void handle_post (http_request message) {
     update_property.push_back( make_pair("Updates", value::string(new_updates) ) );
     //update property of friend
     result = do_request(methods::PUT, basic_url 
-      + data_table_name + "/" 
       + update_entity_admin + "/" 
+      + data_table_name + "/" 
       + string(friends_list[i].first) + "/" 
       + string(friends_list[i].second), value::object(update_property) );
     
