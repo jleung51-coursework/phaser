@@ -7,6 +7,9 @@
   of this user.
 
   This server handles disallowed method malformed request.
+
+  As defined in ServerUrls.h, the URI for this server is
+  http://localhost:34572.
 */
 
 #include <exception>
@@ -29,10 +32,10 @@
 #include <was/table.h>
 
 #include "../include/TableCache.h"
+#include "../include/ServerUrls.h"
+#include "../include/ServerUtils.h"
 
 #include "../include/azure_keys.h"
-
-#include "../include/ServerUtils.h"
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
@@ -72,8 +75,6 @@ using web::http::experimental::listener::http_listener;
 
 using prop_vals_t = vector<pair<string,value>>;
 
-constexpr const char* def_url = "http://localhost:34574";
-
 void handle_post (http_request message) {
   //TODO Not implemented yet!
   message.reply(status_codes::NotImplemented);
@@ -82,7 +83,7 @@ void handle_post (http_request message) {
 
 int main (int argc, char const * argv[]) {
   cout << "Opening listener" << endl;
-  http_listener listener {def_url};
+  http_listener listener {server_urls::push_server};
   listener.support(methods::POST, &handle_post); // Push a status update to friends
   listener.open().wait();
 

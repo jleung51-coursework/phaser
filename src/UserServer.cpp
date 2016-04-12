@@ -7,6 +7,9 @@
   get user's friend list.
 
   This server handles disallowed method malformed request.
+
+  As defined in ServerUrls.h, the URI for this server is
+  http://localhost:34572.
 */
 
 #include <exception>
@@ -28,12 +31,13 @@
 #include <was/storage_account.h>
 #include <was/table.h>
 
-#include "../include/TableCache.h"
 #include "../include/ClientUtils.h"
+#include "../include/ServerUrls.h"
+#include "../include/ServerUtils.h"
+#include "../include/TableCache.h"
 
 #include "../include/azure_keys.h"
 
-#include "../include/ServerUtils.h"
 
 using azure::storage::cloud_storage_account;
 using azure::storage::storage_credentials;
@@ -76,9 +80,6 @@ using web::json::value;
 using web::http::experimental::listener::http_listener;
 
 using prop_vals_t = vector<pair<string,value>>;
-
-constexpr const char* auth_url = "http://localhost:34570";
-constexpr const char* def_url = "http://localhost:34572";
 
 const string get_update_data_op {"GetUpdateData"};
 const string update_entity_auth_op {"UpdateEntityAuth"};
@@ -198,7 +199,7 @@ void handle_post (http_request message){
     pair<status_code, value> result;
     result = do_request(
       methods::GET,
-      string(auth_url) + "/" +
+      string(server_urls::auth_server) + "/" +
       get_update_data_op + "/" +
       userid,
       value::object(json_pw)
@@ -298,7 +299,7 @@ void handle_get (http_request message) {
 
 int main (int argc, char const * argv[]) {
   cout << "Opening listener" << endl;
-  http_listener listener {def_url};
+  http_listener listener {server_urls::user_server};
   listener.support(methods::GET, &handle_get); // Get user's friend list
   listener.support(methods::POST, &handle_post); // SignOn, SignOff
   listener.support(methods::PUT, &handle_put); // Add friend, Unfriend, Update Status
