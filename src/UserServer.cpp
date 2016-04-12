@@ -96,6 +96,7 @@ const string sign_off {"SignOff"}; //POST
 const string add_friend {"AddFriend"}; // PUT
 const string unfriend {"UnFriend"}; //PUT
 const string update_status {"UpdateStatus"}; //PUT
+const string push_status {"PushStatus"}; //Post
 
 const string get_friend_list {"ReadFriendList"}; //GET
 
