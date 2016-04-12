@@ -63,6 +63,8 @@ using std::pair;
 using std::string;
 using std::unordered_map;
 using std::vector;
+using std::get;
+
 using web::http::client::http_client;
 using web::http::http_headers;
 using web::http::http_request;
@@ -80,7 +82,12 @@ using web::http::experimental::listener::http_listener;
 using prop_vals_t = vector<pair<string,value>>;
 
 const string get_update_data_op {"GetUpdateData"};
+
+const string read_entity_auth_op {"ReadEntityAuth"};
 const string update_entity_auth_op {"UpdateEntityAuth"};
+
+const string auth_table_partition {"Userid"};
+const string data_table {"DataTable"};
 
 const string sign_on {"SignOn"}; //POST
 const string sign_off {"SignOff"}; //POST
@@ -88,11 +95,12 @@ const string sign_off {"SignOff"}; //POST
 const string add_friend {"AddFriend"}; // PUT
 const string unfriend {"UnFriend"}; //PUT
 const string update_status {"UpdateStatus"}; //PUT
+const string push_status {"PushStatus"}; //Post
 
 const string get_friend_list {"ReadFriendList"}; //GET
 
 // Cache of active sessions
-std::unordered_map< string, std::tuple<string, string, string> > sessions;
+std::unordered_map< string, std::tuple<string/*token*/, string/*partition*/, string/*row*/> > sessions;
 
 /*
   Return true if an HTTP request has a JSON body
@@ -267,10 +275,174 @@ void handle_put (http_request message) {
   cout << endl << "**** POST " << path << endl;
   auto paths = uri::split_path(path);
 
-  if(true/*basic criteria*/){}
-  else if (paths[0] == add_friend) {}
-  else if (paths[0] == unfriend) {}
-  else if (paths[0] == update_status) {}
+  if (paths.size() != 2 || paths.size() != 4)
+  {
+    message.reply(status_codes::BadRequest);
+    return;
+  }
+  string user_id {paths[1]};
+  if (sessions[user_id] == sessions["empty value"])
+  {
+    message.reply(status_codes::Forbidden);
+    return;
+  }
+  pair<status_code, value> result;
+  string user_token {get<0>(sessions[user_id])};
+  string user_partition {get<1>(sessions[user_id])};
+  string user_row {get<2>(sessions[user_id])};
+
+  if (paths[0] == add_friend) {
+    // TODO: Check validity of the request
+      // Invalid path size
+    if (paths.size() != 4)
+    {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+    // Get current friends list
+    result = do_request(
+      methods::GET,
+      string(server_urls::basic_server) + "/" +
+      read_entity_auth_op + "/" +
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row
+      );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
+    // TODO: Check status code
+    // Parse JSON body
+    unordered_map<string,string> json_body = unpack_json_object(result.second);
+    friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
+    // Add new friend to list
+    user_friends.push_back(make_pair(paths[2],paths[3]));
+    // Rebuild json body
+    string user_friends_string = friends_list_to_string(user_friends);
+    result.second = build_json_value("Friends", user_friends_string);
+    // Put new friends list
+    result = do_request(
+      methods::PUT,
+      string(server_urls::basic_server) + "/" +
+      update_entity_auth_op + "/" +
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row,
+      result.second
+      );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
+    // TODO: Check return results
+    message.reply(status_codes::OK);
+    return;
+  }
+  /*
+   * UnFriend
+   */
+  else if (paths[0] == unfriend) {
+    // TODO: Check validity of request
+    if (paths.size() != 4)
+    {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+    // Get current friends list
+    result = do_request(
+      methods::GET,
+      string(server_urls::basic_server) + "/" +
+      read_entity_auth_op + "/" +
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row
+      );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
+    // TODO: Check status code
+    // Parse Json body
+    unordered_map<string,string> json_body = unpack_json_object(result.second);
+    friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
+    // Remove friend from list
+    friends_list_t new_user_friends;
+    for (int i = 0; i < user_friends.size(); ++i)
+    {
+      if (user_friends[i].first != paths[2] || user_friends[i].second != paths[3])
+      {
+        new_user_friends.push_back(user_friends[i]);
+      }
+    }
+    // Rebuild json body
+    string user_friends_string = friends_list_to_string(new_user_friends);
+    result.second = build_json_value("Friends", user_friends_string);
+    // Put new friends list
+    result = do_request(
+      methods::PUT,
+      string(server_urls::basic_server) + "/" +
+      update_entity_auth_op + "/" +
+      data_table + "/" +
+      user_token + "/" +
+      user_partition + "/" +
+      user_row,
+      result.second
+      );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
+    // TODO: Check return results
+    message.reply(status_codes::OK);
+    return; 
+  }
+  else if (paths[0] == update_status)
+  {
+    // Check validity of request
+    if (paths.size() != 3)
+    {
+      message.reply(status_codes::BadRequest);
+      return;
+    }
+    result.second = build_json_value("Status", string(paths[2]));
+    // Edit entity
+    result = do_request(
+      methods::PUT,
+      string(server_urls::basic_server) + "/" +
+      update_entity_auth_op + "/" +
+      data_table + "/" +
+      user_partition + "/" +
+      user_row,
+      result.second
+      );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
+    // Call Pushserver
+    result = do_request(
+      methods::POST,
+      string(server_urls::push_server) + "/" +
+      push_status + "/" +
+      user_partition + "/" +
+      user_row + "/" +
+      paths[3]
+      );
+    if (result.first != status_codes::OK)
+    {
+      message.reply(result.first);
+      return;
+    }
+  }
   else {
     // malformed request
     vector<value> vec;
@@ -310,7 +482,7 @@ void handle_get (http_request message) {
   const string row = std::get<2>(found->second);
 
   pair<status_code,value> result = do_request (methods::GET,
-                                               def_url + operation + "/" + table + "/" + token + "/" + partition + "/" + row );
+                                               basic_server + operation + "/" + table + "/" + token + "/" + partition + "/" + row );
 
   unordered_map<string,string> json_body = unpack_json_object(result.second);
   friends_list_t user_friends = parse_friends_list(json_body["Friends"]);
