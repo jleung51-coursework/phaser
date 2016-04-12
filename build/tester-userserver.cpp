@@ -48,7 +48,7 @@ public:
 
 	// Constants for initializing tests
 	// Represents a user's credentials
-	static constexpr const char* addr {"http://localhost:34568/"};
+	static constexpr const char* basic_addr {"http://localhost:34568/"};
 	static constexpr const char* auth_addr {"http://localhost:34570/"};
 	static constexpr const char* user_addr {"http://localhost:34572/"};
 	static constexpr const char* userid {"user"};
@@ -73,19 +73,18 @@ public:
 	static constexpr const char* friend_country {"UK"};
 	static constexpr const char* friend_name {"Scott,Tom"};
 
-
 public:
   UserFixture() {
 
     // Create table DataTable and add a test entry
     {
-      int make_result {create_table(addr, table)};
+      int make_result {create_table(basic_addr, table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
         throw std::exception();
       }
       int put_result {put_entity (
-        addr,
+        basic_addr,
         table,
         partition,
         row,
@@ -103,7 +102,7 @@ public:
     // Create table AuthTable and add an entry authenticating the test case
     // in DataTable
     {
-      int make_result {create_table(addr, auth_table)};
+      int make_result {create_table(basic_addr, auth_table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
         throw std::exception();
@@ -117,7 +116,7 @@ public:
       assert(properties.size() == 3);
 
       int user_result {put_entity (
-        addr,
+        basic_addr,
         auth_table,
         auth_table_partition,
         userid,
@@ -136,7 +135,7 @@ public:
     // Delete entry in DataTable
     {
       int del_ent_result {delete_entity (
-        addr,
+        basic_addr,
         table,
         partition,
         row
@@ -150,7 +149,7 @@ public:
     // Delete entry in AuthTable
     {
       int del_ent_result {delete_entity (
-        addr,
+        basic_addr,
         auth_table,
         auth_table_partition,
         userid
@@ -163,3 +162,367 @@ public:
 
   }
 };
+
+SUITE(USERSERVER_POST) {
+	TEST_FIXTURE(UserFixture, Proper) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn
+		// Proper request
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+		password_json.clear();
+
+		// SignOff
+		// Proper request
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+	}
+
+	TEST_FIXTURE(UserFixture, ExtraParameters) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn
+		// 1 extra parameter
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid + "/" +
+			"excess_parameter",
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+		password_json.clear();
+
+		// SignOff
+		// 1 extra parameter
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid + "/" +
+			"excess_parameter"
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+	}
+
+	TEST_FIXTURE(UserFixture, SignOff_ExtraJSON) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn proper request (setup)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+		password_json.clear();
+
+		// SignOff
+		// Extra JSON body
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+	}
+
+	TEST_FIXTURE(UserFixture, SignOn_BadRequest) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// No operation name
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// Incorrect operation name
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			"IncorrectOperation" + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// No userid
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// No operation name or userid
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr),
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// No JSON body (size = 0)
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// JSON body has too many objects (size > 1)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		password_json.push_back( make_pair(
+			"Username",
+			value::string("username")
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// JSON body name is incorrect
+		password_json.push_back( make_pair(
+			string("pASSWORD"),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+	}
+
+	TEST_FIXTURE(UserFixture, SignOff_BadRequest) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn proper request (setup)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+
+		// No operation name
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+		password_json.clear();
+
+		// Incorrect operation name
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			"IncorrectOperation" + "/" +
+			userid
+		);
+		CHECK_EQUAL(status_codes::BadRequest, result.first);
+
+		// Proper request (cleanup)
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		assert(result.first == status_codes::OK);
+	}
+
+	TEST_FIXTURE(UserFixture, SignOn_IncorrectParameters) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// Userid is incorrect
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			"incorrect_userid",
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::NotFound, result.first);
+		password_json.clear();
+
+		// Password is incorrect
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string("incorrect_password")
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::NotFound, result.first);
+		password_json.clear();
+	}
+
+	TEST_FIXTURE(UserFixture, SignOff_IncorrectParameters) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn proper request (setup)
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+		password_json.clear();
+
+		// Incorrect userid
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			"IncorrectUserid"
+		);
+		CHECK_EQUAL(status_codes::NotFound, result.first);
+
+		// Proper request (cleanup)
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		assert(result.first == status_codes::OK);
+	}
+
+	TEST_FIXTURE(UserFixture, SignOff_Twice) {
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn
+		// Proper request
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		assert(result.first == status_codes::OK);
+		password_json.clear();
+
+		// Proper SignOff request
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		assert(result.first == status_codes::OK);
+
+		// Repeated proper SignOff request
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::NotFound, result.first);
+	}
+}
