@@ -41,6 +41,8 @@ using web::http::client::http_client;
 using web::json::object;
 using web::json::value;
 
+using hissy_fit = std::exception;
+
 using namespace rest_operations;
 
 class PushFixture {
@@ -100,7 +102,7 @@ public:
       int make_result {create_table(addr, table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
-        throw std::exception();
+        throw hissy_fit();
       }
       //Create entity 0 in DataTable
       int put_result {put_entity (
@@ -115,7 +117,7 @@ public:
       )};
       cerr << "data table insertion result " << put_result << endl;
       if (put_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
       // Create entity 1 in DataTable
       put_result = put_entity (
@@ -130,7 +132,7 @@ public:
       );
       cerr << "data table insertion result " << put_result << endl;
       if (put_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
       // Create entity 2 in DataTable
       put_result = put_entity (
@@ -145,7 +147,7 @@ public:
       );
       cerr << "data table insertion result " << put_result << endl;
       if (put_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -158,7 +160,7 @@ public:
       int make_result {create_table(addr, auth_table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
-        throw std::exception();
+        throw hissy_fit();
       }
 
       vector<pair<string, value>> properties;
@@ -177,7 +179,7 @@ public:
       )};
       cerr << "auth table insertion result " << user_result << endl;
       if (user_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
     // Create entry 1 authenticating test cases
@@ -198,7 +200,7 @@ public:
       )};
       cerr << "auth table insertion result " << user_result << endl;
       if (user_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
     // Create entry 2 authenticating test cases
@@ -219,7 +221,7 @@ public:
       )};
       cerr << "auth table insertion result " << user_result << endl;
       if (user_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -237,7 +239,7 @@ public:
       )};
       cout << "delete datatable result " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
     // Delete entry 1 in DataTable
@@ -250,7 +252,7 @@ public:
       )};
       cout << "delete datatable result " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
   // Delete entry 2 in DataTable
@@ -263,7 +265,7 @@ public:
       )};
       cout << "delete datatable result " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -277,7 +279,7 @@ public:
       )};
       cout << "delete authtable result 0 " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
     // Delete entry 1 in AuthTable
@@ -290,7 +292,7 @@ public:
       )};
       cout << "delete authtable result 1 " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
     // Delete entry 2 in AuthTable
@@ -303,7 +305,7 @@ public:
       )};
       cout << "delete authtable result 2 " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 

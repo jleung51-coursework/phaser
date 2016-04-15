@@ -41,6 +41,8 @@ using web::http::client::http_client;
 using web::json::object;
 using web::json::value;
 
+using hissy_fit = std::exception;
+
 using namespace rest_operations;
 
 /*
@@ -66,19 +68,19 @@ public:
     int make_result {create_table(addr, table)};
     cerr << "create result " << make_result << endl;
     if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
-      throw std::exception();
+      throw hissy_fit();
     }
     int put_result {put_entity (addr, table, partition, row, property, prop_val)};
     cerr << "put result " << put_result << endl;
     if (put_result != status_codes::OK) {
-      throw std::exception();
+      throw hissy_fit();
     }
   }
 
   ~BasicFixture() {
     int del_ent_result {delete_entity (addr, table, partition, row)};
     if (del_ent_result != status_codes::OK) {
-      throw std::exception();
+      throw hissy_fit();
     }
 
     /*
@@ -93,7 +95,7 @@ public:
       int del_result {delete_table(addr, table)};
       cerr << "delete result " << del_result << endl;
       if (del_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
       */
   }
