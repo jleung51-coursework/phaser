@@ -41,6 +41,8 @@ using web::http::client::http_client;
 using web::json::object;
 using web::json::value;
 
+using hissy_fit = std::exception;
+
 using namespace rest_operations;
 
 class AuthFixture {
@@ -67,7 +69,7 @@ public:
       int make_result {create_table(addr, table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
-        throw std::exception();
+        throw hissy_fit();
       }
       int put_result {put_entity (
         addr,
@@ -79,7 +81,7 @@ public:
       )};
       cerr << "data table insertion result " << put_result << endl;
       if (put_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -89,7 +91,7 @@ public:
       int make_result {create_table(addr, auth_table)};
       cerr << "create result " << make_result << endl;
       if (make_result != status_codes::Created && make_result != status_codes::Accepted) {
-        throw std::exception();
+        throw hissy_fit();
       }
 
       vector<pair<string, value>> properties;
@@ -108,7 +110,7 @@ public:
       )};
       cerr << "auth table insertion result " << user_result << endl;
       if (user_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -126,7 +128,7 @@ public:
       )};
       cout << "delete datatable result " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -140,7 +142,7 @@ public:
       )};
       cout << "delete authtable result " << del_ent_result << endl;
       if (del_ent_result != status_codes::OK) {
-        throw std::exception();
+        throw hissy_fit();
       }
     }
 
@@ -404,7 +406,7 @@ SUITE(GET_AUTH){
                          AuthFixture::user_pwd)};
       cout << "Token response " << token_res.first << endl;
       CHECK_EQUAL (token_res.first, status_codes::OK);
-      
+
       //correct test, read authorized successful
       result = do_request (methods::GET,
         string(AuthFixture::addr)
@@ -415,7 +417,7 @@ SUITE(GET_AUTH){
         + AuthFixture::row
       );
       CHECK_EQUAL(status_codes::OK, result.first);
-      
+
       //less than 4 parameters provided -- no row given
       result = do_request (methods::GET,
         string(AuthFixture::addr)
@@ -425,7 +427,7 @@ SUITE(GET_AUTH){
         + AuthFixture::partition + "/"
       );
       CHECK_EQUAL(status_codes::BadRequest, result.first);
-      
+
       //less than 4 parameters provided -- no ReadEntityAuth
       result = do_request (methods::GET,
         string(AuthFixture::addr)
@@ -435,7 +437,7 @@ SUITE(GET_AUTH){
         + AuthFixture::row
       );
       CHECK_EQUAL(status_codes::BadRequest, result.first);
-      
+
       //table not found
       result = do_request (methods::GET,
         string(AuthFixture::addr)
@@ -446,7 +448,7 @@ SUITE(GET_AUTH){
         + AuthFixture::row
       );
       CHECK_EQUAL(status_codes::NotFound, result.first);
-      
+
       //no entity with partition name
       result = do_request (methods::GET,
         string(AuthFixture::addr)
@@ -457,7 +459,7 @@ SUITE(GET_AUTH){
         + AuthFixture::row
       );
       CHECK_EQUAL(status_codes::NotFound, result.first);
-      
+
       //correct test, read authorized successful
       result = do_request (methods::GET,
         string(AuthFixture::addr)
