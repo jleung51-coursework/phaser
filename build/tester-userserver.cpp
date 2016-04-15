@@ -526,3 +526,49 @@ SUITE(USERSERVER_POST) {
 		CHECK_EQUAL(status_codes::NotFound, result.first);
 	}
 }
+
+SUITE(USERSERVER_PUT)
+{
+	TEST_FIXTURE(UserFixture, AddFriend)
+	{
+		// Signon
+		vector<pair<string, value>> password_json;
+		pair<status_code, value> result;
+
+		// SignOn
+		// Proper request
+		password_json.push_back( make_pair(
+			string(auth_pwd_prop),
+			value::string(user_pwd)
+		));
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_on + "/" +
+			UserFixture::userid,
+			value::object(password_json)
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+		password_json.clear();
+
+		// Testing
+		result = do_request(
+			methods::PUT,
+			string(UserFixture::user_addr) +
+			add_friend + "/" +
+			UserFixture::userid + "/" +
+			UserFixture::friend_country + "/" +
+			UserFixture::friend_name
+			);
+		CHECK_EQUAL(status_codes::OK, result.first);
+		// SignOff
+		// Proper request
+		result = do_request(
+			methods::POST,
+			string(UserFixture::user_addr) +
+			sign_off + "/" +
+			UserFixture::userid
+		);
+		CHECK_EQUAL(status_codes::OK, result.first);
+	}
+}
