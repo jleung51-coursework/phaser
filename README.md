@@ -1,6 +1,7 @@
 # Phaser
 
 C++ [RESTful](https://en.wikipedia.org/wiki/Representational_state_transfer) servers which:
+
 1. Interact with Microsoft Azure Storage Tables for database storage,
 2. Authenticate a client with read or read-and-update permissions for 24 hours,
 3. Create records of active user sessions and status updates, and
