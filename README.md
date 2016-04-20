@@ -13,9 +13,12 @@ Migrated from [GitLab](https://csil-git1.cs.surrey.sfu.ca/cmpt276-group-faze/pha
 
 ## Technologies
 
-Microsoft Azure is used for database storage.  
-The C++ REST SDK is used to interact with Microsoft Azure.  
-UnitTest++ is used for testing.
+| Purpose | Technology |
+|---|---|
+| Communication protocol | [REST](https://en.wikipedia.org/wiki/Representational_state_transfer) |
+| Database storage | [Microsoft Azure Storage Client Library](https://github.com/Azure/azure-storage-cpp) |
+| Client-server communication API | [Microsoft C++ REST SDK](https://github.com/Microsoft/cpprestsdk) |
+| Unit testing framework | [UnitTest++](https://github.com/unittest-cpp/unittest-cpp) |
 
 ## Main Contributors
 
