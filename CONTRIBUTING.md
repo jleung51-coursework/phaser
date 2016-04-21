@@ -38,6 +38,62 @@ sudo apt-get update
 sudo apt-get install cmake git g++ make libboost1.54-all-dev libssl-dev libxml++2.6-dev libxml++2.6-doc uuid-dev
 ```
 
+### C++ REST SDK
+
+To install the [C++ REST SDK](https://github.com/Microsoft/cpprestsdk) (codenamed *Casablanca*) into a directory named `casablanca/` in the current directory, run the following commands:
+
+```
+git clone https://github.com/Microsoft/cpprestsdk.git casablanca
+cd casablanca/Release
+mkdir build.release
+cd build.release
+CXX=g++-4.8
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+```
+
+### Microsoft Azure Storage Client Library
+
+To install the [Microsoft Azure Storage Client Library](https://github.com/Azure/azure-storage-cpp) into a directory named `azure-storage-cpp/` in the current directory, run the following commands:
+
+(Replace the CASABLANCA_DIR path with the path to your local `casablanca` installation if necessary)
+
+```
+git clone https://github.com/Azure/azure-storage-cpp.git
+cd azure-storage-cpp/Microsoft.WindowsAzure.Storage
+mkdir build.release
+cd build.release
+CASABLANCA_DIR=../../casablanca
+CXX=g++-4.8
+cmake .. -DCMAKE_BUILD_TYPE=Release
+make
+```
+
+### UnitTest++
+
+To install [UnitTest++](https://github.com/unittest-cpp/unittest-cpp) into a directory named `unittest-cpp` in the current directory, run the following commands:
+
+```
+git clone https://github.com/unittest-cpp/unittest-cpp.git
+cd unittest-cpp/builds
+cmake -G "Unix Makefiles" ../
+cmake --build ./
+```
+
+### phaser
+
+Grab a local copy of the project from us:
+
+```
+git clone https://github.com/CMPT276-2016spring/phaser
+```
+
+or, if you've already cloned the project:
+
+```
+git clone https://github.com/USERNAME/phaser
+```
+
 ### Microsoft Azure account
 
 You'll need a [Microsoft Azure](https://azure.microsoft.com) account to run these servers, in order to connect to the databases.
