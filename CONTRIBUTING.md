@@ -2,6 +2,31 @@
 
 ## Setup
 
+### Development Environment
+
+#### Necessary Packages
+
+General programming:
+
+* cmake
+* git
+* g++
+* make
+
+Boost libraries:
+
+* libboost1.54-all-dev
+
+Client-server communication:
+
+* libssl-dev
+
+To make sure you have all of these up-to-date, run:
+```
+sudo apt-get update
+sudo apt-get install cmake git g++ make libssl-dev libboost1.54-all-dev
+```
+
 ### Microsoft Azure account
 
 You'll need a [Microsoft Azure](https://azure.microsoft.com) account to run these servers, in order to connect to the databases.
