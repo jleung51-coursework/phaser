@@ -6,25 +6,24 @@
 
 #### Necessary Packages
 
-General programming:
-
-* cmake
-* git
-* g++
-* make
-
-Boost libraries:
-
-* libboost1.54-all-dev
-
-Client-server communication:
-
-* libssl-dev
+* General programming:
+  * cmake
+  * git
+  * g++
+  * make
+* Boost libraries:
+  * libboost1.54-all-dev
+* Client-server communication:
+  * libssl-dev
+* Microsoft Azure Storage Client Library dependencies:
+  * libxml++2.6-dev
+  * libxml++2.6-doc
+  * uuid-dev
 
 To make sure you have all of these up-to-date, run:
 ```
 sudo apt-get update
-sudo apt-get install cmake git g++ make libssl-dev libboost1.54-all-dev
+sudo apt-get install cmake git g++ make libboost1.54-all-dev libssl-dev libxml++2.6-dev libxml++2.6-doc uuid-dev
 ```
 
 ### Microsoft Azure account
