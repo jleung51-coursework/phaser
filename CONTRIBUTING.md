@@ -4,6 +4,18 @@
 
 ### Development Environment
 
+This project requires several packages and libraries; here are some instructions to get your environment set up accordingly.
+
+The directory structure is as follows:
+
+```
+[parent_directory]
+ ├ casablanca (C++ REST SDK)
+ ├ azure-storage-cpp (Microsoft Azure Storage)
+ ├ unittest-cpp (UnitTest++)
+ └ phaser
+```
+
 #### Necessary Packages
 
 * General programming:
