@@ -96,11 +96,19 @@ git clone https://github.com/USERNAME/phaser
 
 ### Microsoft Azure account
 
-You'll need a [Microsoft Azure](https://azure.microsoft.com) account to run these servers, in order to connect to the databases.
+You'll need a [Microsoft Azure](https://azure.microsoft.com) subscription to run these servers, in order to connect to the databases.
 
 Head to the [Azure Portal](https://portal.azure.com/) once you have your account.
 
-Set up your Microsoft Azure storage account **[further instructions to be added]**.
+#### Setting up the Azure Resource
+
+In the left menu, choose *Resource groups* and click the * **+** Add* button to create a new resource. Name it anything you like, choose a subscription, and click *Create*.
+
+Navigate to *Resource groups* again and click on the group you just created. Click the * **+** Add * button at the top and search for a *Storage account*. When you find it, click the option and choose *Create*.  
+In the new window, enter a unique name for the storage account into the *Name* field. Click *Type* to select the type of your storage account (Standard-LRS *L Locally Redundant* being the most affordable). Make sure you have the resource group is set to the group you just created.  
+Click the *Create* button and wait until your new resource is up and available!
+
+#### Authenticating the Project
 
 Now it's time to authenticate the project with your Microsoft Azure account.  
 In the Azure Portal, navigate to the left menu and click on *All resources*. Choose the newly-created entry, which should have the Type *Storage account*.  
