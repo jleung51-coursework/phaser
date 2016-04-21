@@ -103,13 +103,14 @@ Head to the [Azure Portal](https://portal.azure.com/) once you have your account
 Set up your Microsoft Azure storage account **[further instructions to be added]**.
 
 Now it's time to authenticate the project with your Microsoft Azure account.  
-In the Azure Portal, navigate to the left menu and click on "All resources". Choose the newly-created entry, which should have the Type "Storage account".  
-If the "Settings" menu does not automatically open, click the small button which says "All settings" to the upper right of the section named "Services". Under "General", click "Access keys". Take note of the storage account name and access keys; you will need them in the next section.
+In the Azure Portal, navigate to the left menu and click on *All resources*. Choose the newly-created entry, which should have the Type *Storage account*.  
+If the *Settings* menu does not automatically open, click the small button which says *All settings* to the upper right of the section named *Services*.  
+Under *General*, click *Access keys*. Take note of the storage account name and access keys; you will need them in the next section.
 
 Copy `include/azure_keys_default.h` to `include/azure_keys.h`. `azure_keys.h` has been added to the `.gitignore` file; do NOT commit your `azure_keys.h` file to the repository.  
 In `azure_keys.h`:
-1. Copy the text from "Storage account name" and replace `[AZURE_STORAGE_ACCOUNT_NAME]` in the string `tables_endpoint` with it.
-2. Copy the text from "Storage account name" and paste it after the `AccountName=` property (but before the `;"`) in the string `storage_connection_string`.
+1. Copy the text from *Storage account name* and replace `[AZURE_STORAGE_ACCOUNT_NAME]` in the string `tables_endpoint` with it.
+2. Copy the text from *Storage account name* and paste it after the `AccountName=` property (but before the `;"`) in the string `storage_connection_string`.
 3. Copy either of the access keys and paste it after the `AccountKey=` property (but before the `"`) in the string `storage_connection_string`.
 
 ## Issue Priorities
