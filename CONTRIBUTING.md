@@ -32,7 +32,7 @@ The directory structure is as follows:
   * libxml++2.6-doc
   * uuid-dev
 
-To make sure you have all of these up-to-date, run:
+Make sure you have all of these up-to-date:
 ```
 sudo apt-get update
 sudo apt-get install cmake git g++ make libboost1.54-all-dev libssl-dev libxml++2.6-dev libxml++2.6-doc uuid-dev
@@ -40,7 +40,7 @@ sudo apt-get install cmake git g++ make libboost1.54-all-dev libssl-dev libxml++
 
 ### C++ REST SDK
 
-To install the [C++ REST SDK](https://github.com/Microsoft/cpprestsdk) (codenamed *Casablanca*) into a directory named `casablanca/` in the current directory, run the following commands:
+Install the [C++ REST SDK](https://github.com/Microsoft/cpprestsdk) (codenamed *Casablanca*) into a directory named `casablanca/` in the current directory by running the following commands:
 
 ```
 git clone https://github.com/Microsoft/cpprestsdk.git casablanca
@@ -54,7 +54,7 @@ make
 
 ### Microsoft Azure Storage Client Library
 
-To install the [Microsoft Azure Storage Client Library](https://github.com/Azure/azure-storage-cpp) into a directory named `azure-storage-cpp/` in the current directory, run the following commands:
+Install the [Microsoft Azure Storage Client Library](https://github.com/Azure/azure-storage-cpp) into a directory named `azure-storage-cpp/` in the current directory by running the following commands:
 
 (Replace the CASABLANCA_DIR path with the path to your local `casablanca` installation if necessary)
 
@@ -71,7 +71,7 @@ make
 
 ### UnitTest++
 
-To install [UnitTest++](https://github.com/unittest-cpp/unittest-cpp) into a directory named `unittest-cpp` in the current directory, run the following commands:
+Install [UnitTest++](https://github.com/unittest-cpp/unittest-cpp) into a directory named `unittest-cpp` in the current directory by running the following commands:
 
 ```
 git clone https://github.com/unittest-cpp/unittest-cpp.git
