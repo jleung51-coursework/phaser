@@ -146,6 +146,21 @@ Once all the servers you need are up, you can run the tests:
 ./tester [suite [test]]
 ```
 
+## Server Interdependencies
+
+Some servers require other servers for normal operation; here is a description of the interdependencies.
+
+* BasicServer requires no other servers
+* AuthServer requires:
+  * BasicServer
+* UserServer requires:
+  * BasicServer
+  * AuthServer
+* PushServer requires:
+  * BasicServer
+  * AuthServer
+  * UserServer
+
 ## Issue Priorities
 
 | Priority Level | Meaning |
