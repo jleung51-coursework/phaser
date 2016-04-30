@@ -121,6 +121,31 @@ In `azure_keys.h`:
 2. Copy the text from *Storage account name* and paste it after the `AccountName=` property (but before the `;"`) in the string `storage_connection_string`.
 3. Copy either of the access keys and paste it after the `AccountKey=` property (but before the `"`) in the string `storage_connection_string`.
 
+Your environment should be set up and ready to go!
+
+## Running the Servers and Tests
+
+To build the servers and tests, navigate into the *build/* directory. Run CMake and build the executables:
+
+```
+cmake .
+make
+```
+
+Assuming you've configured your directories and environment correctly, everything should build correctly without errors or warnings. If not, recheck your directory structure and go over the setup instructions again. Raise an issue if you're still having problems, and we'll do our best to help you!
+
+Run each server in its own terminal - for example:
+
+```
+./basicserver
+```
+
+Once all the servers you need are up, you can run the tests:
+
+```
+./tester [suite [test]]
+```
+
 ## Issue Priorities
 
 | Priority Level | Meaning |
