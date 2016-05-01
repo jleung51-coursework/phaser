@@ -146,26 +146,13 @@ Once all the servers you need are up, you can run the tests:
 ./tester [suite [test]]
 ```
 
-## Server Interdependencies
-
-Some servers require other servers for normal operation; here is a description of the interdependencies.
-
-* BasicServer requires no other servers
-* AuthServer requires:
-  * BasicServer
-* UserServer requires:
-  * BasicServer
-  * AuthServer
-* PushServer requires:
-  * BasicServer
-  * AuthServer
-  * UserServer
-
 ## Server Setup Requirements
 
 Some servers require a particular setup before normal operation; if they are not set up correctly, the server may return `http::status_codes::InternalError (500)`.
 
 ### AuthServer
+
+BasicServer must be running alongside AuthServer.
 
 Two tables named DataTable and AuthTable are required.
 
@@ -176,10 +163,16 @@ AuthTable contains a single partition named `Userid`. The name of each row in th
 
 ### UserServer
 
+BasicServer and AuthServer must be running alongside UserServer.
+
 DataTable contains any or no partition(s) and row(s). A partition is the name of the region where a user is located; a row is the name of a user in the form `LastName,FirstName`. Each row has at least the 3 properties `Friends`, `Status`, and `Updates`.  
 The `Friends` property contains a string representing the user's friends. Each friend is separated by a pipe character (`|`); the partition and row are separated by a semicolon character (`;`). E.g.: `USA;Shinoda,Mike|Canada;Edwards,Kathleen`.  
 The `Status` property contains a string representing the user's most recent status update. Currently, the characters `/ \n & " ' %` should not be included in a status.  
 The `Updates` property contains a string representing the user's friends' status updates. Each new status update is added to the end of `Updates`, with the newline character (`\n`) separating each status update. E.g.: `StatusUpdate1\nStatusUpdate2`.
+
+### PushServer
+
+BasicServer, AuthServer, and UserServer must be running alongside PushServer.
 
 ## Issue Priorities
 
