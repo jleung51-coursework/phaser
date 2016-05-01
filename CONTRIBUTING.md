@@ -38,7 +38,7 @@ sudo apt-get update
 sudo apt-get install cmake git g++ make libboost1.54-all-dev libssl-dev libxml++2.6-dev libxml++2.6-doc uuid-dev
 ```
 
-### C++ REST SDK
+#### C++ REST SDK
 
 Install the [C++ REST SDK](https://github.com/Microsoft/cpprestsdk) (codenamed *Casablanca*) into a directory named `casablanca/` in the current directory by running the following commands:
 
@@ -52,7 +52,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 ```
 
-### Microsoft Azure Storage Client Library
+#### Microsoft Azure Storage Client Library
 
 Install the [Microsoft Azure Storage Client Library](https://github.com/Azure/azure-storage-cpp) into a directory named `azure-storage-cpp/` in the current directory by running the following commands:
 
@@ -69,7 +69,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 ```
 
-### UnitTest++
+#### UnitTest++
 
 Install [UnitTest++](https://github.com/unittest-cpp/unittest-cpp) into a directory named `unittest-cpp` in the current directory by running the following commands:
 
@@ -80,7 +80,7 @@ cmake -G "Unix Makefiles" ../
 cmake --build ./
 ```
 
-### phaser
+#### phaser
 
 Grab a local copy of the project from us:
 
