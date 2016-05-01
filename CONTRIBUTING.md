@@ -161,6 +161,26 @@ Some servers require other servers for normal operation; here is a description o
   * AuthServer
   * UserServer
 
+## Server Setup Requirements
+
+Some servers require a particular setup before normal operation; if they are not set up correctly, the server may return `http::status_codes::InternalError (500)`.
+
+### AuthServer
+
+Two tables named DataTable and AuthTable are required.
+
+DataTable may contain any or no arbitrary partition(s), row(s), and property(ies). Access for reading or reading/updating can be authorized for any single row in DataTable.
+
+AuthTable contains a single partition named `Userid`. The name of each row in the partition corresponds to a username. Each row contains exactly 3 properties: `Password`, `DataPartition`, and `DataRow`.  
+`Password` is the password for the specific user, and `DataPartition` and `DataRow` are the names of the partition and row referring to the single entry in DataTable which the user is authorized to access.
+
+### UserServer
+
+DataTable contains any or no partition(s) and row(s). A partition is the name of the region where a user is located; a row is the name of a user in the form `LastName,FirstName`. Each row has at least the 3 properties `Friends`, `Status`, and `Updates`.  
+The `Friends` property contains a string representing the user's friends. Each friend is separated by a pipe character (`|`); the partition and row are separated by a semicolon character (`;`). E.g.: `USA;Shinoda,Mike|Canada;Edwards,Kathleen`.  
+The `Status` property contains a string representing the user's most recent status update. Currently, the characters `/ \n & " ' %` should not be included in a status.  
+The `Updates` property contains a string representing the user's friends' status updates. Each new status update is added to the end of `Updates`, with the newline character (`\n`) separating each status update. E.g.: `StatusUpdate1\nStatusUpdate2`.
+
 ## Issue Priorities
 
 | Priority Level | Meaning |
