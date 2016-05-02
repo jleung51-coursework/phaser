@@ -554,11 +554,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       is the property name, and the second value of each element is "*".
       E.g. {"born":"*", "art":"*"} would return all entities in the requested
       table which have properties "born" and "art".
-    Administrative URI:
+    URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME
-    Authenticated URI:
-      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
-      (AUTHENTICATION_TOKEN is obtained from AuthServer)
     cURL command:
       curl -iX get -H 'Content-Type: application/json' -d '{"PROPERTY_NAME" : "*", "PROPERTY_NAME" : "*"}' URI
 
@@ -567,12 +564,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       requested partition. Each element in the JSON array is a single entity.
     Body:
       None.
-    Administrative URI:
+    URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME/PARTITION_NAME/*
-      (row name can only be "*")
-    Authenticated URI:
-      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN/PARTITION_NAME/*
-      (AUTHENTICATION_TOKEN is obtained from AuthServer)
       (row name can only be "*")
     cURL command:
       curl -iX get URI
@@ -587,11 +580,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       "Partition" and "Row" respectively.
     Body:
       None.
-    Administrative URI:
+    URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME/
-    Authenticated URI:
-      http://localhost:34568/ReadEntityAuth/TABLE_NAME/AUTHENTICATION_TOKEN
-      (AUTHENTICATION_TOKEN is obtained from AuthServer)
     cURL command:
       curl -iX get URI
     // TODO: This does not safely handle a property named "Partition" or "Row".
