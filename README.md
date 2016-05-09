@@ -12,7 +12,7 @@ All development from 2016-04-12 onwards is independent from the course material.
 
 Migrated from [GitLab](https://csil-git1.cs.surrey.sfu.ca/cmpt276-group-faze/phaser) on 2016-04-12.
 
-## Technologies
+## Software Stack
 
 | Purpose | Technology |
 |---|---|
