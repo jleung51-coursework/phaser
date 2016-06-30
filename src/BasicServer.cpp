@@ -554,6 +554,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
       is the property name, and the second value of each element is "*".
       E.g. {"born":"*", "art":"*"} would return all entities in the requested
       table which have properties "born" and "art".
+      If no entities have the requested properties, then an empty JSON array
+      is returned (with status_codes::OK).
     URI:
       http://localhost:34568/ReadEntityAdmin/TABLE_NAME
     cURL command:
@@ -562,6 +564,8 @@ unordered_map<string,string> get_json_bourne(http_request message) {
     Operation:
       Returns a JSON array of objects with all entities in a
       requested partition. Each element in the JSON array is a single entity.
+      If no entities are in the requested partition, then an empty JSON array
+      is returned (with status_codes::OK).
     Body:
       None.
     URI:
