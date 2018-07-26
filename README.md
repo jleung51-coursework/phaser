@@ -10,6 +10,10 @@ Microsoft Azure is used for database storage.
 The C++ REST SDK is used to interact with Microsoft Azure.  
 UnitTest++ is used for testing.
 
+# About
+
+This project was a group project in CMPT 276: Introduction to Software Engineering at Simon Fraser University for the Spring 2016 semester.
+
 ## Main Contributors
 
 * Daphne Chong
