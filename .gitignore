@@ -5,8 +5,13 @@ cmake_install.cmake
 results.html
 *.orig
 
+.vagrant
+
+# Project-specific files
+
 azure_keys.h
 
+# Built executables
 basicserver
 authserver
 userserver
