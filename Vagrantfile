@@ -29,16 +29,17 @@ Vagrant.configure(2) do |config|
     ninja
 
     # Build the Azure Storage Client Library for C++
-    sudo apt-get -y install g++-4.8 libxml++2.6-dev libxml++2.6-doc uuid-dev
+    sudo apt-get -y install g++-4.8 libboost-locale-dev libboost-log-dev libxml++2.6-dev libxml++2.6-doc libxml2-dev uuid-dev
     cd /home/vagrant
     git clone https://github.com/Azure/azure-storage-cpp.git
     cd azure-storage-cpp/Microsoft.WindowsAzure.Storage/
-    mkdir build.release
+    mkdir -p build.release
     cd build.release
-    CASABLANCA_DIR=/home/vagrant/casablanca CXX=g++-4.8 cmake .. -DCMAKE_BUILD_TYPE=Release
+    CASABLANCA_DIR=/home/vagrant/casablanca CXX=g++-4.8 cmake .. -DCASABLANCA_LIBRARY=/home/vagrant/casablanca/Release/build.release/Binaries -DCMAKE_BUILD_TYPE=Release
     make
 
     # Set time zone for Vancouver, Canada
+    sudo apt-get -y install language-pack-en
     timedatectl set-timezone Canada/Pacific
     SHELL
   end
