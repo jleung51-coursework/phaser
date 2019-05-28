@@ -9,8 +9,8 @@ Set of C++ servers built with the [Microsoft C++ REST SDK](https://github.com/mi
 | Development Language | C++ |
 | Back-End Web Server Framework | [Microsoft C++ REST SDK](https://github.com/microsoft/cpprestsdk) |
 | Testing Framework | [UnitTest++](https://github.com/unittest-cpp/unittest-cpp) |
-| Build System | CMake |
-| Application Container | Vagrant |
+| Build System | [CMake](https://cmake.org/) |
+| Application Container | [Vagrant](https://www.vagrantup.com/) |
 | Database (Online) | [Microsoft Azure Storage](https://docs.microsoft.com/en-us/azure/storage/) |
 
 ## Setup
