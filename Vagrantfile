@@ -38,6 +38,12 @@ Vagrant.configure(2) do |config|
     CASABLANCA_DIR=/home/vagrant/casablanca CXX=g++-4.8 cmake .. -DCASABLANCA_LIBRARY=/home/vagrant/casablanca/Release/build.release/Binaries -DCMAKE_BUILD_TYPE=Release
     make
 
+    cd /home/vagrant
+    git clone https://github.com/unittest-cpp/unittest-cpp.git
+    cd unittest-cpp/builds/
+    cmake -G "Unix Makefiles" ../
+    cmake --build ./
+
     # Set time zone for Vancouver, Canada
     sudo apt-get -y install language-pack-en
     timedatectl set-timezone Canada/Pacific

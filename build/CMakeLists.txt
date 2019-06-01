@@ -7,7 +7,7 @@ set(USER_DIR /home/vagrant)
 set(SSL_DIR /usr/lib/x86_64-linux-gnu)
 set(Casablanca_DIR ${USER_DIR}/casablanca)
 set(Store_DIR ${USER_DIR}/azure-storage-cpp)
-set(Test_DIR ${USER_DIR}/cmpt276-projects/unittest-cpp)
+set(Test_DIR ${USER_DIR}/unittest-cpp)
 
 find_package(Boost REQUIRED COMPONENTS random chrono system thread regex filesystem)
 find_package(Threads REQUIRED)

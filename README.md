@@ -37,6 +37,14 @@ vagrant ssh
 
 Further instructions under construction...
 
+## Directory Structure
+
+The `src/` directory contains the C++ source files for the servers.
+
+The `include/` directory contains all header files.
+
+The `build/` directory contains all the testing files, as well as the CMake build script.
+
 # Architecture
 
 [![Server layout](readme-img/phaser-architecture.svg)](https://cloudcraft.co/view/2fd5c9e2-af62-4f6b-bd66-0a8c4ca37062?key=twz6SxA3DCjY9L6F8anEvw)
