@@ -26,7 +26,10 @@ Vagrant.configure(2) do |config|
     mkdir -p casablanca/Release/build.release
     cd casablanca/Release/build.release
     cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release
-    ninja
+    ninja -j2
+
+    # Alternative
+    # sudo apt-get -y install libcpprest-dev
 
     # Build the Azure Storage Client Library for C++
     sudo apt-get -y install g++-4.8 libboost-locale-dev libboost-log-dev libxml++2.6-dev libxml++2.6-doc libxml2-dev uuid-dev
