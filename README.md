@@ -35,7 +35,28 @@ Enter the virtual machine:
 vagrant ssh
 ```
 
-Further instructions under construction...
+Enter the project directory within the virtual machine. This directory is mirrored to the directory on your local machine, so any changes made on your local machine will be reflected instantly.
+```shell
+cd phaser/
+```
+
+Create a file named `azure_keys.h` within the `include/` directory, using the default template. This file will be ignored by Git; do not commit it as it will contain sensitive credentials.
+```shell
+cp include/azure_keys_default.h include/azure_keys.h
+```
+
+### Setup for Microsoft Azure Storage Tables
+
+Create a new Storage Account in Microsoft Azure.
+
+In the file `include/azure_keys.h`, within the `tables_endpoint` variable, replace `USERNAME` with the username of your Storage Account.
+
+Under _Settings_, click _Access Keys_.
+
+1. Enter the displayed name of the Storage Account into the file `include/azure_keys.h` in the line `AccountName=`.
+2. Choose one of the keys shown and add it to the file `include/azure_keys.h` in the line `AccountKey=`.
+
+**Further instructions under construction...**
 
 ## Directory Structure
 
