@@ -38,7 +38,7 @@ Vagrant.configure(2) do |config|
     cd azure-storage-cpp/Microsoft.WindowsAzure.Storage/
     mkdir -p build.release
     cd build.release
-    CASABLANCA_DIR=/home/vagrant/casablanca CXX=g++-4.8 cmake .. -DCASABLANCA_LIBRARY=/home/vagrant/casablanca/Release/build.release/Binaries -DCMAKE_BUILD_TYPE=Release
+    CASABLANCA_DIR=/home/vagrant/casablanca CXX=g++-4.8 cmake .. -DCASABLANCA_LIBRARY=/home/vagrant/casablanca/Release/build.release/Binaries -DCMAKE_BUILD_TYPE=Release -DBUILD_SAMPLES=ON
     make
 
     cd /home/vagrant

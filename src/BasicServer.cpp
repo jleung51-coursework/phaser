@@ -37,10 +37,10 @@
 
 
 using azure::storage::cloud_storage_account;
-using azure::storage::storage_credentials;
-using azure::storage::storage_exception;
 using azure::storage::cloud_table;
 using azure::storage::cloud_table_client;
+using azure::storage::storage_credentials;
+using azure::storage::storage_exception;
 using azure::storage::edm_type;
 using azure::storage::entity_property;
 using azure::storage::table_entity;
